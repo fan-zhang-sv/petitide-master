@@ -7,6 +7,7 @@ import {
   Calculator,
   CalendarDays,
   Check,
+  ChevronRight,
   Download,
   FlaskConical,
   Home,
@@ -15,6 +16,7 @@ import {
   Plus,
   RotateCcw,
   Settings,
+  Shield,
   SkipForward,
   Syringe,
   Upload,
@@ -22,8 +24,8 @@ import {
 import './App.css'
 import { clearPlannerData, exportPlannerData, importPlannerData } from './db/database'
 import { usePlannerStore } from './db/usePlannerStore'
-import { PROTOCOL_SOURCE_URL, protocolCatalog } from './data/protocolCatalog'
-import { requestNotificationPermission, sendDueNotification } from './pwa/notifications'
+import { protocolCatalog } from './data/protocolCatalog'
+import { requestNotificationPermission } from './pwa/notifications'
 import type {
   DayPlanStatus,
   EvidenceLevel,
@@ -46,7 +48,7 @@ import {
 import { calculateReconstitution, formatNumber } from './utils/reconstitution'
 import { analyzeCycleReview, type CycleReview } from './utils/cycleReview'
 
-type Tab = 'dashboard' | 'catalog' | 'planner' | 'calendar' | 'calculator' | 'settings'
+type MainTab = 'today' | 'plans' | 'calendar' | 'tools' | 'dose-math' | 'settings'
 
 const routeOptions: RouteType[] = [
   'subcutaneous',
@@ -67,12 +69,18 @@ const evidenceLabel: Record<EvidenceLevel, string> = {
   advanced: 'Advanced caution',
 }
 
-const tabs: Array<{ id: Tab; label: string; icon: typeof Home }> = [
-  { id: 'dashboard', label: 'Today', icon: Home },
-  { id: 'catalog', label: 'Catalog', icon: Library },
-  { id: 'planner', label: 'Plan', icon: Syringe },
+const mobileTabs: Array<{ id: MainTab; label: string; icon: typeof Home }> = [
+  { id: 'today', label: 'Today', icon: Home },
+  { id: 'plans', label: 'Plans', icon: Syringe },
   { id: 'calendar', label: 'Calendar', icon: CalendarDays },
-  { id: 'calculator', label: 'Dose Math', icon: Calculator },
+  { id: 'tools', label: 'Tools', icon: Settings },
+]
+
+const desktopTabs: Array<{ id: MainTab; label: string; icon: typeof Home }> = [
+  { id: 'today', label: 'Today', icon: Home },
+  { id: 'plans', label: 'Plans', icon: Syringe },
+  { id: 'calendar', label: 'Calendar', icon: CalendarDays },
+  { id: 'dose-math', label: 'Dose Math', icon: Calculator },
   { id: 'settings', label: 'Settings', icon: Settings },
 ]
 
@@ -80,7 +88,7 @@ const defaultSites = ['Abdomen L', 'Abdomen R', 'Thigh L', 'Thigh R', 'Arm L', '
 
 function App() {
   const store = usePlannerStore()
-  const [activeTab, setActiveTab] = useState<Tab>('dashboard')
+  const [activeTab, setActiveTab] = useState<MainTab>('today')
 
   if (store.loading || !store.settings) {
     return (
@@ -110,71 +118,106 @@ function App() {
 
   return (
     <main className="app-shell">
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Local-first PWA</p>
-          <h1>Petitide Master</h1>
-        </div>
-        <button
-          type="button"
-          className="icon-button"
-          aria-label="Send due notification"
-          title="Send due notification"
-          onClick={() => sendDueNotification(overdueStatuses)}
-        >
-          <Bell aria-hidden />
-        </button>
-      </header>
+      <aside className="desktop-sidebar">
+        <header className="brand-header">
+          <div className="brand-logo">PM</div>
+          <div className="brand-text">
+            <p className="eyebrow">Local-first PWA</p>
+            <h1>Petitide Master</h1>
+          </div>
+        </header>
+        <nav className="sidebar-nav" aria-label="Desktop Primary">
+          {desktopTabs.map((tab) => {
+            const Icon = tab.icon
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                className={
+                  activeTab === tab.id ||
+                  (tab.id === 'dose-math' && activeTab === 'tools') // Desktop dose-math active if somehow tools is active
+                    ? 'active'
+                    : ''
+                }
+                onClick={() => setActiveTab(tab.id)}
+                title={tab.label}
+              >
+                <Icon aria-hidden />
+                <span className="nav-label">{tab.label}</span>
+              </button>
+            )
+          })}
+        </nav>
+      </aside>
 
-      <nav className="tabbar" aria-label="Primary">
-        {tabs.map((tab) => {
-          const Icon = tab.icon
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              className={activeTab === tab.id ? 'active' : ''}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              <Icon aria-hidden />
-              <span>{tab.label}</span>
-            </button>
-          )
-        })}
-      </nav>
+      <section className="app-content">
+        <header className="topbar">
+          <div className="mobile-brand">
+            <p className="eyebrow">Local-first PWA</p>
+            <h1>Petitide Master</h1>
+          </div>
+        </header>
 
-      {activeTab === 'dashboard' && (
+        <nav className="tabbar mobile-only" aria-label="Mobile Primary">
+          {mobileTabs.map((tab) => {
+            const Icon = tab.icon
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                className={
+                  activeTab === tab.id ||
+                  (tab.id === 'tools' && ['dose-math', 'settings'].includes(activeTab))
+                    ? 'active'
+                    : ''
+                }
+                onClick={() => setActiveTab(tab.id === 'tools' && activeTab === 'settings' ? 'settings' : tab.id === 'tools' && activeTab === 'dose-math' ? 'dose-math' : tab.id)}
+              >
+                <Icon aria-hidden />
+                <span>{tab.label}</span>
+              </button>
+            )
+          })}
+        </nav>
+
+      {activeTab === 'today' && (
         <Dashboard
           plans={store.activePlans}
           logs={store.logs}
           todayStatuses={todayStatuses}
           overdueStatuses={overdueStatuses}
           onLog={store.addLog}
-          onOpenCatalog={() => setActiveTab('catalog')}
+          onOpenCatalog={() => setActiveTab('plans')} // We'll make Plans tab handle opening the catalog
         />
       )}
-      {activeTab === 'catalog' && <Catalog onAddPlan={store.addPlan} />}
-      {activeTab === 'planner' && (
-        <Planner
+      {activeTab === 'plans' && (
+        <PlansHub
           plans={store.activePlans}
           logs={store.logs}
           onArchive={store.archivePlan}
           onUpdatePlan={store.updatePlan}
+          onAddPlan={store.addPlan}
         />
       )}
       {activeTab === 'calendar' && (
         <CalendarView plans={store.activePlans} logs={store.logs} onLog={store.addLog} />
       )}
-      {activeTab === 'calculator' && (
-        <ReconstitutionCalculator plans={store.activePlans} onUpdatePlan={store.updatePlan} />
-      )}
-      {activeTab === 'settings' && (
-        <SettingsView
+      {activeTab === 'tools' && (
+        <ToolsHub
+          plans={store.activePlans}
+          onUpdatePlan={store.updatePlan}
           settings={store.settings}
           onSaveSettings={store.saveSettings}
           onRefresh={store.refresh}
         />
       )}
+      {activeTab === 'dose-math' && (
+        <ReconstitutionCalculator plans={store.activePlans} onUpdatePlan={store.updatePlan} />
+      )}
+      {activeTab === 'settings' && (
+        <SettingsView settings={store.settings} onSaveSettings={store.saveSettings} onRefresh={store.refresh} />
+      )}
+      </section>
     </main>
   )
 }
@@ -187,15 +230,29 @@ function Onboarding({ onAccept }: { onAccept: () => Promise<void> }) {
           <Syringe aria-hidden />
         </div>
         <p className="eyebrow">Petitide Master</p>
-        <h1>Track plans, logs, and vial math without sending health data to a server.</h1>
-        <p>
-          This app is for personal tracking and educational reference only. It does not recommend
-          peptides, dosing, stacks, or treatment decisions. Confirm any protocol with a qualified
-          clinician and product-specific instructions.
-        </p>
-        <div className="notice">
-          Seeded protocol rows are editable templates derived from the user-provided Reddit
-          reference. Vendor links are excluded.
+        <h1>Welcome to Petitide Master</h1>
+        <div className="feature-list">
+          <div className="feature-tile">
+            <Archive aria-hidden className="feature-icon" />
+            <div>
+              <strong>Local & Private</strong>
+              <span>Track protocols and math securely on your device.</span>
+            </div>
+          </div>
+          <div className="feature-tile">
+            <Library aria-hidden className="feature-icon" />
+            <div>
+              <strong>Community Templates</strong>
+              <span>Start with references, but edit before use.</span>
+            </div>
+          </div>
+          <div className="feature-tile warning">
+            <AlertTriangle aria-hidden className="feature-icon" />
+            <div>
+              <strong>Not Medical Advice</strong>
+              <span>Educational only. Always consult a clinician.</span>
+            </div>
+          </div>
         </div>
         <button type="button" className="primary-button" onClick={() => void onAccept()}>
           <Check aria-hidden />
@@ -240,8 +297,8 @@ function Dashboard({
     <section className="screen">
       {plans.length === 0 ? (
         <EmptyState
-          title="No active plan yet"
-          body="Choose a protocol template or add a custom entry to start tracking."
+          title="No active plan"
+          body="Add a protocol from the catalog."
           actionLabel="Open catalog"
           onAction={onOpenCatalog}
         />
@@ -250,11 +307,9 @@ function Dashboard({
           <section className="today-hero">
             <div>
               <p className="eyebrow">Today · {todayIso()}</p>
-              <h2>{actionItems.length > 0 ? `${actionItems.length} action${actionItems.length === 1 ? '' : 's'} to handle` : 'Nothing due right now'}</h2>
-              <p>
-                {actionItems.length > 0
-                  ? 'Log what you did, or skip it with a note. Everything else is tucked below.'
-                  : 'You are clear for today. Check upcoming cycle changes below.'}
+              <h2>{actionItems.length > 0 ? `${actionItems.length} Action${actionItems.length === 1 ? '' : 's'}` : 'All Clear'}</h2>
+              <p className="muted">
+                {actionItems.length > 0 ? 'Items need your attention' : 'You are all caught up'}
               </p>
             </div>
             <div className="today-score">
@@ -264,9 +319,9 @@ function Dashboard({
           </section>
 
           <div className="metric-grid today-metrics">
-            <Metric label="Do now" value={actionItems.length} tone={actionItems.length ? 'danger' : 'cool'} />
-            <Metric label="Off cycle" value={offCycleToday.length} tone="warm" />
-            <Metric label="Logged today" value={completedToday.length} tone="cool" />
+            <Metric label="Do now" value={actionItems.length} tone="" />
+            <Metric label="Off cycle" value={offCycleToday.length} tone="" />
+            <Metric label="Logged today" value={completedToday.length} tone="" />
           </div>
 
           <section className="section-band essentials">
@@ -276,13 +331,14 @@ function Dashboard({
             </div>
             {actionItems.length > 0 ? (
               <div className="stack">
-                {actionItems.map((status) => (
+                {actionItems.map((status, index) => (
                   <StatusCard
                     key={`${status.plan.id}-${status.date}`}
                     status={status}
                     logs={logs}
                     onLog={onLog}
                     simple
+                    style={{ animationDelay: `${index * 40}ms` }}
                   />
                 ))}
               </div>
@@ -290,8 +346,8 @@ function Dashboard({
               <div className="clear-state">
                 <Check aria-hidden />
                 <div>
-                  <h3>No injections due today.</h3>
-                  <p>Off-cycle and future items stay visible below so you can still plan ahead.</p>
+                  <h3>You're all clear today.</h3>
+                  <p>Future items stay visible below.</p>
                 </div>
               </div>
             )}
@@ -319,13 +375,14 @@ function Dashboard({
             <details className="section-band" open>
               <summary>Logged today</summary>
               <div className="stack compact logged-list">
-                {completedToday.map((status) => (
+                {completedToday.map((status, index) => (
                   <StatusCard
                     key={`logged-${status.plan.id}-${status.date}`}
                     status={status}
                     logs={logs}
                     onLog={onLog}
                     simple
+                    style={{ animationDelay: `${index * 40}ms` }}
                   />
                 ))}
               </div>
@@ -351,11 +408,13 @@ function StatusCard({
   logs,
   onLog,
   simple = false,
+  style,
 }: {
   status: DayPlanStatus
   logs: InjectionLog[]
   onLog: (log: Omit<InjectionLog, 'id' | 'createdAt'>) => Promise<void>
   simple?: boolean
+  style?: React.CSSProperties
 }) {
   const existingLog = logs.find((log) => log.planId === status.plan.id && log.date === status.date)
   const [site, setSite] = useState(existingLog?.site ?? status.plan.injectionSites[0] ?? '')
@@ -374,7 +433,7 @@ function StatusCard({
     })
 
   return (
-    <article className={`status-card ${status.cycleState} ${simple ? 'simple' : ''}`}>
+    <article className={`status-card ${status.cycleState} ${simple ? 'simple' : ''}`} style={style}>
       <div>
         <div className="card-title-row">
           <h3>{status.plan.name}</h3>
@@ -474,21 +533,11 @@ function Catalog({
 
   return (
     <section className="screen">
-      <div className="guide-strip">
-        <div>
-          <strong>1. Pick a template</strong>
-          <span>Search by goal, compound, or route.</span>
-        </div>
-        <div>
-          <strong>2. Review the basics</strong>
-          <span>Dose, start date, frequency, cycle.</span>
-        </div>
-        <div>
-          <strong>3. Save and log today</strong>
-          <span>Advanced options stay available.</span>
-        </div>
+      <div className="section-heading">
+        <h2>Catalog</h2>
+        <p>Browse educational templates to build your plan.</p>
       </div>
-      <div className="toolbar">
+      <div className="filter-bar">
         <label>
           Search
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="BPC, GLP, sleep" />
@@ -524,17 +573,14 @@ function Catalog({
         </label>
       </div>
 
-      <div className="source-note">
-        Templates are educational references from{' '}
-        <a href={PROTOCOL_SOURCE_URL} target="_blank" rel="noreferrer">
-          the provided Reddit protocol
-        </a>
-        . Edit every plan before use.
+      <div className="notice-banner">
+        <Activity aria-hidden className="banner-icon" />
+        <span>Community references only. Verify before use.</span>
       </div>
 
       <div className="catalog-grid">
-        {filtered.map((item) => (
-          <article key={item.id} className="catalog-card">
+        {filtered.map((item, index) => (
+          <article key={item.id} className="catalog-card" style={{ animationDelay: `${index * 40}ms` }}>
             <div className="card-title-row">
               <h3>{item.name}</h3>
               <span className={`pill ${item.evidence}`}>{evidenceLabel[item.evidence]}</span>
@@ -730,34 +776,83 @@ function PlanDialog({
   )
 }
 
-function Planner({
+function PlansHub({
   plans,
   logs,
   onArchive,
   onUpdatePlan,
+  onAddPlan,
 }: {
   plans: PlannedPeptide[]
   logs: InjectionLog[]
   onArchive: (id: string) => Promise<void>
   onUpdatePlan: (id: string, patch: Partial<PlannedPeptide>) => Promise<void>
+  onAddPlan: (plan: Omit<PlannedPeptide, 'id' | 'createdAt'>) => Promise<PlannedPeptide>
+}) {
+  const [showCatalog, setShowCatalog] = useState(false)
+
+  if (showCatalog) {
+    return (
+      <div className="sub-view">
+        <header className="sub-header">
+          <button type="button" className="ghost-button small" onClick={() => setShowCatalog(false)}>
+            ← Back to Plans
+          </button>
+        </header>
+        <Catalog onAddPlan={async (plan) => {
+          const newPlan = await onAddPlan(plan)
+          setShowCatalog(false)
+          return newPlan
+        }} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="plans-wrapper">
+      {plans.length > 0 && (
+        <header className="plans-header">
+          <button type="button" className="primary-button small" onClick={() => setShowCatalog(true)}>
+            <Library aria-hidden />
+            Browse Catalog
+          </button>
+        </header>
+      )}
+      <PlannerView plans={plans} logs={logs} onArchive={onArchive} onUpdatePlan={onUpdatePlan} onOpenCatalog={() => setShowCatalog(true)} />
+    </div>
+  )
+}
+
+function PlannerView({
+  plans,
+  logs,
+  onArchive,
+  onUpdatePlan,
+  onOpenCatalog,
+}: {
+  plans: PlannedPeptide[]
+  logs: InjectionLog[]
+  onArchive: (id: string) => Promise<void>
+  onUpdatePlan: (id: string, patch: Partial<PlannedPeptide>) => Promise<void>
+  onOpenCatalog: () => void
 }) {
   const [editingPlan, setEditingPlan] = useState<PlannedPeptide | null>(null)
 
   if (plans.length === 0) {
     return (
       <section className="screen">
-        <EmptyState title="Plan is empty" body="Add a peptide from the catalog to build your schedule." />
+        <EmptyState title="Plan is empty" body="Add a protocol from the catalog." actionLabel="Browse catalog" onAction={onOpenCatalog} />
       </section>
     )
   }
 
   return (
     <section className="screen planner-list">
-      {plans.map((plan) => {
+      {plans.map((plan, index) => {
         const status = getDayPlanStatus(plan, logs, todayIso())
         const review = analyzeCycleReview(plan, logs)
         return (
-          <article key={plan.id} className="plan-card">
+          <article key={plan.id} className="plan-card" style={{ animationDelay: `${index * 40}ms` }}>
             <div className="card-title-row">
               <h2>{plan.name}</h2>
               <span className={`pill ${status.cycleState}`}>{status.cycleState}</span>
@@ -823,21 +918,11 @@ function CycleReviewCard({
           <strong>{review.headline}</strong>
         </div>
       </div>
-      <p>{review.detail}</p>
-      <ul>
+      <ul className="compact-fact-list">
         {review.facts.slice(0, compact ? 2 : 4).map((fact) => (
           <li key={fact}>{fact}</li>
         ))}
       </ul>
-      {review.baseline && (
-        <div className={`baseline-chip ${review.baseline.confidence}`}>
-          <strong>{review.baseline.label}</strong>
-          <span>
-            {review.baseline.date} · {review.baseline.confidence} confidence
-          </span>
-        </div>
-      )}
-      <small>Not medical advice. Use this as a review prompt, not a switch instruction.</small>
     </aside>
   )
 }
@@ -1028,22 +1113,18 @@ function CalendarView({
 
       <section className="transition-strip">
         {transitions.length > 0 ? (
-          transitions.map((transition) => (
-            <div key={transition!.plan.id}>
-              <strong>{transition!.plan.name}</strong>
-              <span>
-                {transition!.state === 'off' ? 'Review restart around' : 'Review off-cycle around'} {transition!.date}
-                {transition!.days >= 0 ? ` · in ${transition!.days} days` : ''}
+          <div className="transition-badge-row">
+            {transitions.map((transition) => (
+              <span key={transition!.plan.id} className="transition-badge">
+                <strong>{transition!.plan.name}</strong>
+                <span>{transition!.date}</span>
               </span>
-            </div>
-          ))
+            ))}
+          </div>
         ) : (
-          <p className="muted">No fixed cycle transitions to show.</p>
+          <span className="transition-badge empty">No upcoming transitions</span>
         )}
       </section>
-      <div className="source-note">
-        Past rows are editable. Use Done when it happened and Not done when it did not. Review dates are planning baselines, not medical instructions.
-      </div>
 
       <section className="calendar-legend" aria-label="Calendar color guide">
         <span className="legend-item due">Due now</span>
@@ -1375,15 +1456,23 @@ function SettingsView({
   return (
     <section className="screen settings-layout">
       <section className="section-band">
-        <h2>Safety boundary</h2>
-        <p>
-          This is a planner and calculator for user-entered protocols. It does not recommend
-          compounds, doses, titration, stacks, injection technique, or treatment decisions.
-        </p>
-        <p className="muted">
-          Source templates are educational and should be verified against clinician guidance,
-          product labels, and current evidence.
-        </p>
+        <h2>About</h2>
+        <div className="info-card-list">
+          <div className="info-card">
+            <Shield aria-hidden className="info-icon" />
+            <div>
+              <strong>Privacy First</strong>
+              <p>Data stays entirely on your device.</p>
+            </div>
+          </div>
+          <div className="info-card warning">
+            <AlertTriangle aria-hidden className="info-icon" />
+            <div>
+              <strong>Not Medical Advice</strong>
+              <p>Educational tool only. Consult a clinician.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="section-band">
@@ -1479,6 +1568,74 @@ function EmptyState({
           {actionLabel}
         </button>
       )}
+    </section>
+  )
+}
+
+function ToolsHub({
+  plans,
+  onUpdatePlan,
+  settings,
+  onSaveSettings,
+  onRefresh,
+}: {
+  plans: PlannedPeptide[]
+  onUpdatePlan: (id: string, patch: Partial<PlannedPeptide>) => Promise<void>
+  settings: AppSettings
+  onSaveSettings: (patch: Partial<AppSettings>) => Promise<void>
+  onRefresh: () => Promise<void>
+}) {
+  const [activeTool, setActiveTool] = useState<'menu' | 'calculator' | 'settings'>('menu')
+
+  if (activeTool === 'calculator') {
+    return (
+      <div className="sub-view">
+        <header className="sub-header">
+          <button type="button" className="ghost-button small" onClick={() => setActiveTool('menu')}>
+            ← Back to Tools
+          </button>
+        </header>
+        <ReconstitutionCalculator plans={plans} onUpdatePlan={onUpdatePlan} />
+      </div>
+    )
+  }
+
+  if (activeTool === 'settings') {
+    return (
+      <div className="sub-view">
+        <header className="sub-header">
+          <button type="button" className="ghost-button small" onClick={() => setActiveTool('menu')}>
+            ← Back to Tools
+          </button>
+        </header>
+        <SettingsView settings={settings} onSaveSettings={onSaveSettings} onRefresh={onRefresh} />
+      </div>
+    )
+  }
+
+  return (
+    <section className="screen">
+      <div className="section-heading">
+        <h2>Tools & Utilities</h2>
+      </div>
+      <div className="menu-list">
+        <button className="menu-row" onClick={() => setActiveTool('calculator')}>
+          <div className="menu-icon"><Calculator aria-hidden /></div>
+          <div className="menu-info">
+            <h3>Dose Math</h3>
+            <p>Reconstitution calculator</p>
+          </div>
+          <ChevronRight aria-hidden className="menu-chevron" />
+        </button>
+        <button className="menu-row" onClick={() => setActiveTool('settings')}>
+          <div className="menu-icon"><Settings aria-hidden /></div>
+          <div className="menu-info">
+            <h3>Settings</h3>
+            <p>Preferences and data backup</p>
+          </div>
+          <ChevronRight aria-hidden className="menu-chevron" />
+        </button>
+      </div>
     </section>
   )
 }
