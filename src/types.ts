@@ -111,3 +111,10 @@ export interface DayPlanStatus {
   scheduleConfidence?: 'high' | 'medium' | 'low'
   scheduleAnchorDate?: string
 }
+export type MainTab = 'today' | 'plans' | 'calendar' | 'tools' | 'dose-math' | 'settings'
+
+export interface TabConfig {
+  id: MainTab
+  label: string
+  icon: any // Lucide icon type
+}
