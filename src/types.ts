@@ -1,3 +1,5 @@
+import type { LucideIcon } from 'lucide-react'
+
 export type RouteType =
   | 'subcutaneous'
   | 'intranasal'
@@ -116,5 +118,5 @@ export type MainTab = 'today' | 'plans' | 'calendar' | 'tools' | 'dose-math' | '
 export interface TabConfig {
   id: MainTab
   label: string
-  icon: any // Lucide icon type
+  icon: LucideIcon
 }

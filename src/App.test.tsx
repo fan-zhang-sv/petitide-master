@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
@@ -16,15 +16,12 @@ describe('App', () => {
     expect(await screen.findByText('Petitide Master')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /i understand/i }))
 
-    await waitFor(() => expect(screen.getByRole('navigation', { name: /primary/i })).toBeInTheDocument())
-    await userEvent.click(
-      within(screen.getByRole('navigation', { name: /primary/i })).getByRole('button', {
-        name: /catalog/i,
-      }),
-    )
+    await waitFor(() => expect(screen.getByRole('button', { name: /open catalog/i })).toBeInTheDocument())
+    await userEvent.click(screen.getByRole('button', { name: /open catalog/i }))
+    await userEvent.click(await screen.findByRole('button', { name: /browse catalog/i }))
 
     expect(await screen.findByText('BPC-157')).toBeInTheDocument()
-    expect(screen.getByText(/the provided Reddit protocol/i)).toBeInTheDocument()
+    expect(screen.getByText(/community references only/i)).toBeInTheDocument()
   })
 
   it('keeps Today focused by hiding cycle review details', async () => {
@@ -32,7 +29,7 @@ describe('App', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: /i understand/i }))
 
-    expect(await screen.findByText(/no active plan yet/i)).toBeInTheDocument()
+    expect(await screen.findByText(/no active plan/i)).toBeInTheDocument()
     expect(screen.queryByText('Cycle review')).not.toBeInTheDocument()
   })
 })

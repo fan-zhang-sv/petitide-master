@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Home, Syringe, CalendarDays, Settings, Calculator } from 'lucide-react';
 import './App.css';
 import { usePlannerStore } from './db/usePlannerStore';
@@ -38,6 +38,14 @@ const desktopTabs: TabConfig[] = [
 function App() {
   const store = usePlannerStore();
   const [activeTab, setActiveTab] = useState<MainTab>('today');
+
+  useEffect(() => {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    if (!navigator.userAgent.includes('jsdom')) {
+      window.scrollTo({ top: 0, left: 0 });
+    }
+  }, [activeTab]);
 
   const today = todayIso();
   const todayStatuses = useMemo(() => getStatusesForDate(store.activePlans, store.logs, today), [

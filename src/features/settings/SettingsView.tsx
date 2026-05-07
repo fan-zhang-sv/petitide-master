@@ -25,7 +25,7 @@ export function SettingsView({
           await importPlannerData(content);
           await onRefresh();
           alert('Data imported successfully');
-        } catch (err) {
+        } catch {
           alert('Failed to import data');
         }
       };

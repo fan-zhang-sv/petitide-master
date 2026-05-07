@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Library } from 'lucide-react';
+import { Library, Plus } from 'lucide-react';
 import type { PlannedPeptide, InjectionLog } from '../../types';
 import { CatalogView } from '../catalog/CatalogView';
 import { PlannerView } from './PlannerView';
@@ -42,20 +42,21 @@ export function PlansView({
 
   return (
     <div className="plans-wrapper">
-      {plans.length > 0 && (
-        <header className="plans-header">
-          <button type="button" className="primary-button small" onClick={() => setShowCatalog(true)}>
-            <Library aria-hidden />
-            Browse Catalog
-          </button>
-        </header>
-      )}
+      <header className="plans-topline">
+        <div>
+          <h2>Plans</h2>
+          <p>{plans.length} active</p>
+        </div>
+        <button type="button" className="primary-button small" onClick={() => setShowCatalog(true)}>
+          {plans.length > 0 ? <Library aria-hidden /> : <Plus aria-hidden />}
+          {plans.length > 0 ? 'Catalog' : 'Add plan'}
+        </button>
+      </header>
       <PlannerView
         plans={plans}
         logs={logs}
         onArchive={onArchive}
         onUpdatePlan={onUpdatePlan}
-        onOpenCatalog={() => setShowCatalog(true)}
       />
     </div>
   );

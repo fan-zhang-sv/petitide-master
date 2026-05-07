@@ -1,10 +1,10 @@
-import { Check } from 'lucide-react';
+import { AlertCircle, CalendarClock, Check, Gauge, Pause, Power, X } from 'lucide-react';
+import type { ReactNode } from 'react';
 import type { PlannedPeptide, InjectionLog, DayPlanStatus } from '../../types';
-import { todayIso } from '../../utils/dates';
-import { Metric } from '../../components/ui/Metric';
+import { addIsoDays, todayIso } from '../../utils/dates';
+import { getDayPlanStatus } from '../../utils/cycleEngine';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { StatusCard } from './StatusCard';
-import { getAdherence } from '../../utils/cycleEngine';
 
 interface DashboardProps {
   plans: PlannedPeptide[];
@@ -23,7 +23,7 @@ export function Dashboard({
   onLog,
   onOpenCatalog,
 }: DashboardProps) {
-  const adherence = getAdherence(plans, logs);
+  const today = todayIso();
   const dueToday = todayStatuses.filter((status) => status.due);
   const completedToday = todayStatuses.filter((status) => status.completed || status.skipped);
   const actionItems = [...overdueStatuses, ...dueToday].filter(
@@ -32,11 +32,26 @@ export function Dashboard({
       !status.completed &&
       !status.skipped
   );
-  const offCycleToday = todayStatuses.filter((status) => status.cycleState === 'off');
-  const upcomingChanges = todayStatuses
+  const actionKeys = new Set(actionItems.map((status) => `${status.plan.id}:${status.date}`));
+  const completedKeys = new Set(completedToday.map((status) => `${status.plan.id}:${status.date}`));
+  const offCycleToday = todayStatuses.filter(
+    (status) => status.cycleState === 'off' && !actionKeys.has(`${status.plan.id}:${status.date}`) && !completedKeys.has(`${status.plan.id}:${status.date}`),
+  );
+  const lastSevenStatuses = plans.flatMap((plan) =>
+    Array.from({ length: 7 }, (_, index) =>
+      getDayPlanStatus(plan, logs, addIsoDays(today, -index), today),
+    ),
+  );
+  const sevenDayCompleted = lastSevenStatuses.filter((status) => status.completed).length;
+  const sevenDaySkipped = lastSevenStatuses.filter((status) => status.skipped).length;
+  const sevenDayMissed = lastSevenStatuses.filter((status) => status.missed).length;
+  const sevenDayTotal = sevenDayCompleted + sevenDaySkipped + sevenDayMissed;
+  const sevenDayRate = sevenDayTotal === 0 ? 0 : Math.round((sevenDayCompleted / sevenDayTotal) * 100);
+  const onCycleToday = todayStatuses.filter((status) => status.cycleState === 'active').length;
+  const nextChange = todayStatuses
     .filter((status) => status.nextTransitionDate)
-    .sort((a, b) => a.nextTransitionDate!.localeCompare(b.nextTransitionDate!))
-    .slice(0, 4);
+    .sort((a, b) => a.nextTransitionDate!.localeCompare(b.nextTransitionDate!))[0];
+  const lowConfidence = todayStatuses.filter((status) => status.scheduleConfidence === 'low').length;
 
   if (plans.length === 0) {
     return (
@@ -51,77 +66,129 @@ export function Dashboard({
 
   return (
     <section className="screen">
-      <section className="today-hero">
+      <section className="today-header">
         <div>
-          <p className="eyebrow">Today · {todayIso()}</p>
-          <h2>
-            {actionItems.length > 0
-              ? `${actionItems.length} Action${actionItems.length === 1 ? '' : 's'}`
-              : 'All Clear'}
-          </h2>
-          <p className="muted">
-            {actionItems.length > 0 ? 'Items need your attention' : 'You are all caught up'}
-          </p>
-        </div>
-        <div className="today-score">
-          <strong>{adherence.due > 0 ? `${adherence.rate}%` : 'New'}</strong>
-          <span>{adherence.due > 0 ? 'past adherence' : 'no past days'}</span>
+          <h2>Today</h2>
+          <p>{today}</p>
         </div>
       </section>
 
-      <div className="metric-grid today-metrics">
-        <Metric label="Do now" value={actionItems.length} tone="" />
-        <Metric label="Off cycle" value={offCycleToday.length} tone="" />
-        <Metric label="Logged today" value={completedToday.length} tone="" />
-      </div>
+      <section className="today-stat-grid" aria-label="Today context">
+        <TodayStat
+          icon={<Gauge aria-hidden />}
+          label="7-day completion"
+          value={`${sevenDayRate}%`}
+          detail={sevenDayTotal > 0 ? `${sevenDayCompleted}/${sevenDayTotal} completed` : 'No logged scheduled days'}
+        />
+        <TodayStat
+          icon={<Power aria-hidden />}
+          label="On cycle"
+          value={onCycleToday.toString()}
+          detail={`${plans.length} active plans`}
+        />
+        <TodayStat
+          icon={<CalendarClock aria-hidden />}
+          label="Next change"
+          value={nextChange?.nextTransitionDate ?? 'None'}
+          detail={nextChange?.plan.name ?? 'No scheduled change'}
+        />
+        <TodayStat
+          icon={<AlertCircle aria-hidden />}
+          label="Schedule confidence"
+          value={lowConfidence > 0 ? lowConfidence.toString() : 'Stable'}
+          detail={lowConfidence > 0 ? 'Low confidence schedules' : 'No low confidence'}
+        />
+      </section>
 
-      <section className="section-band essentials">
-        <div className="section-heading">
-          <h2>Essential actions</h2>
-          <span>{actionItems.length ? 'Needs attention' : 'Clear'}</span>
+      <section className="today-board">
+        <div className="today-column primary">
+          <GroupHeading icon={<X aria-hidden />} title="Not done" count={actionItems.length} />
+          {actionItems.length > 0 ? (
+            <div className="today-list">
+              {actionItems.map((status) => (
+                <StatusCard
+                  key={`${status.plan.id}-${status.date}`}
+                  status={status}
+                  logs={logs}
+                  onLog={onLog}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="today-empty-state">
+              <Check aria-hidden />
+              <span>Clear</span>
+            </div>
+          )}
         </div>
-        {actionItems.length > 0 ? (
-          <div className="stack">
-            {actionItems.map((status, index) => (
-              <StatusCard
-                key={`${status.plan.id}-${status.date}`}
-                status={status}
-                logs={logs}
-                onLog={onLog}
-                simple
-                style={{ animationDelay: `${index * 40}ms` }}
-              />
-            ))}
+
+        {completedToday.length > 0 && (
+          <div className="today-column">
+            <GroupHeading icon={<Check aria-hidden />} title="Done" count={completedToday.length} />
+            <div className="today-list">
+              {completedToday.map((status) => (
+                <StatusCard
+                  key={`${status.plan.id}-logged`}
+                  status={status}
+                  logs={logs}
+                  onLog={onLog}
+                />
+              ))}
+            </div>
           </div>
-        ) : (
-          <div className="clear-state">
-            <Check aria-hidden />
-            <div>
-              <h3>You're all clear today.</h3>
-              <p>Future items stay visible below.</p>
+        )}
+
+        {offCycleToday.length > 0 && (
+          <div className="today-column quiet">
+            <GroupHeading icon={<Pause aria-hidden />} title="Off cycle" count={offCycleToday.length} />
+            <div className="today-list">
+              {offCycleToday.map((status) => (
+                <StatusCard
+                  key={`${status.plan.id}-off`}
+                  status={status}
+                  logs={logs}
+                  onLog={onLog}
+                />
+              ))}
             </div>
           </div>
         )}
       </section>
-
-      <details className="section-band">
-        <summary>Plan status and upcoming cycle changes</summary>
-        <div className="support-grid">
-          {upcomingChanges.length > 0 ? (
-            upcomingChanges.map((status) => (
-              <StatusCard
-                key={`${status.plan.id}-future`}
-                status={status}
-                logs={logs}
-                onLog={onLog}
-                simple
-              />
-            ))
-          ) : (
-            <p className="muted">No upcoming changes calculated.</p>
-          )}
-        </div>
-      </details>
     </section>
+  );
+}
+
+function TodayStat({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <article className="today-stat-card">
+      <span>{icon}</span>
+      <div>
+        <p>{label}</p>
+        <strong>{value}</strong>
+        <small>{detail}</small>
+      </div>
+    </article>
+  );
+}
+
+function GroupHeading({ icon, title, count }: { icon: ReactNode; title: string; count: number }) {
+  return (
+    <div className="today-group-heading">
+      <span>
+        {icon}
+        {title}
+      </span>
+      <strong>{count}</strong>
+    </div>
   );
 }
