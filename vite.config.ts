@@ -15,7 +15,7 @@ export default defineConfig({
       manifest: {
         name: 'Petitide Master',
         short_name: 'Petitide',
-        description: 'Local-first peptide cycle, dose, and injection tracking.',
+        description: 'Peptide cycle, dose, and injection tracking — local on your device, with optional Google sync.',
         theme_color: '#f7f3ea',
         background_color: '#f7f3ea',
         display: 'standalone',

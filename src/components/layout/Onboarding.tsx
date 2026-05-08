@@ -3,12 +3,16 @@ import { Button } from '../ui/Button';
 import { Eyebrow } from '../ui/Eyebrow';
 import styles from '../../styles/app.module.css';
 import { cx } from '../../utils/ui/classNames';
+import { useAuth } from '../../auth/AuthProvider';
 
 interface OnboardingProps {
   onAccept: () => Promise<void>;
 }
 
 export function Onboarding({ onAccept }: OnboardingProps) {
+  const { firebaseEnabled, user } = useAuth();
+  const cloudAware = firebaseEnabled || Boolean(user);
+
   return (
     <main className={styles.onboarding}>
       <section className={styles['onboarding-panel']}>
@@ -21,8 +25,12 @@ export function Onboarding({ onAccept }: OnboardingProps) {
           <div className={styles['feature-tile']}>
             <Archive aria-hidden className={styles['feature-icon']} />
             <div>
-              <strong>Local & Private</strong>
-              <span>Track protocols and math securely on your device.</span>
+              <strong>{cloudAware ? 'Local-first, optional sync' : 'Local & Private'}</strong>
+              <span>
+                {cloudAware
+                  ? 'Track protocols on your device, then sign in with Google to sync.'
+                  : 'Track protocols and math securely on your device.'}
+              </span>
             </div>
           </div>
           <div className={styles['feature-tile']}>

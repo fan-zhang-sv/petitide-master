@@ -1,0 +1,198 @@
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  writeBatch,
+  type Firestore,
+} from 'firebase/firestore'
+import type { AppSettings, InjectionLog, PlannedPeptide } from '../types'
+import { mergePlannerData, type PlannerDataset } from './mergePlannerData'
+import type { PeptidePlannerDatabase } from '../db/database'
+
+export type MigrationPhase =
+  | 'idle'
+  | 'reading-local'
+  | 'reading-cloud'
+  | 'writing'
+  | 'verifying'
+  | 'clearing-local'
+  | 'done'
+  | 'error'
+
+const BATCH_LIMIT = 400 // safely below Firestore's 500-write batch ceiling
+
+export interface MigrationResult {
+  plansWritten: number
+  logsWritten: number
+  duplicateLogsDeleted: number
+  hadLocalData: boolean
+}
+
+interface MigrateArgs {
+  uid: string
+  firestore: Firestore
+  db: PeptidePlannerDatabase
+  onPhase?: (phase: MigrationPhase) => void
+}
+
+async function readLocal(db: PeptidePlannerDatabase): Promise<PlannerDataset> {
+  const [plans, logs, settings] = await Promise.all([
+    db.plans.toArray(),
+    db.logs.toArray(),
+    db.settings.get('settings'),
+  ])
+  return { plans, logs, settings: settings ?? null }
+}
+
+async function readCloud(firestore: Firestore, uid: string): Promise<PlannerDataset> {
+  const plansSnap = await getDocs(collection(firestore, 'users', uid, 'plans'))
+  const logsSnap = await getDocs(collection(firestore, 'users', uid, 'logs'))
+  const settingsSnap = await getDoc(doc(firestore, 'users', uid, 'settings', 'settings'))
+  return {
+    plans: plansSnap.docs.map((d) => d.data() as PlannedPeptide),
+    logs: logsSnap.docs.map((d) => d.data() as InjectionLog),
+    settings: (settingsSnap.data() as AppSettings | undefined) ?? null,
+  }
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  if (items.length === 0) return []
+  const out: T[][] = []
+  for (let i = 0; i < items.length; i += size) {
+    out.push(items.slice(i, i + size))
+  }
+  return out
+}
+
+async function writeCloud(
+  firestore: Firestore,
+  uid: string,
+  data: {
+    plans: PlannedPeptide[]
+    logs: InjectionLog[]
+    settings: AppSettings
+    deletedLogIds: string[]
+  },
+): Promise<void> {
+  const plansChunks = chunk(data.plans, BATCH_LIMIT)
+  for (const group of plansChunks) {
+    const batch = writeBatch(firestore)
+    group.forEach((plan) => {
+      const ref = doc(firestore, 'users', uid, 'plans', plan.id)
+      batch.set(ref, { ...plan, schemaVersion: 1 })
+    })
+    await batch.commit()
+  }
+
+  const logsChunks = chunk(data.logs, BATCH_LIMIT)
+  for (const group of logsChunks) {
+    const batch = writeBatch(firestore)
+    group.forEach((log) => {
+      const ref = doc(firestore, 'users', uid, 'logs', log.id)
+      batch.set(ref, { ...log, schemaVersion: 1 })
+    })
+    await batch.commit()
+  }
+
+  const settingsBatch = writeBatch(firestore)
+  settingsBatch.set(doc(firestore, 'users', uid, 'settings', 'settings'), {
+    ...data.settings,
+    schemaVersion: 1,
+  })
+  settingsBatch.set(doc(firestore, 'users', uid, 'meta', 'migration'), {
+    migratedAt: new Date().toISOString(),
+    schemaVersion: 1,
+  })
+  await settingsBatch.commit()
+
+  const deleteChunks = chunk(data.deletedLogIds, BATCH_LIMIT)
+  for (const group of deleteChunks) {
+    await Promise.all(
+      group.map((id) => deleteDoc(doc(firestore, 'users', uid, 'logs', id))),
+    )
+  }
+}
+
+async function verifyCloud(
+  firestore: Firestore,
+  uid: string,
+  expected: { plans: PlannedPeptide[]; logs: InjectionLog[]; settings: AppSettings },
+): Promise<boolean> {
+  const cloud = await readCloud(firestore, uid)
+  const cloudPlanIds = new Set(cloud.plans.map((p) => p.id))
+  const cloudLogIds = new Set(cloud.logs.map((l) => l.id))
+  const everyPlan = expected.plans.every((p) => cloudPlanIds.has(p.id))
+  const everyLog = expected.logs.every((l) => cloudLogIds.has(l.id))
+  const settingsOk =
+    cloud.settings != null && cloud.settings.onboardingAccepted === expected.settings.onboardingAccepted
+  return everyPlan && everyLog && settingsOk
+}
+
+async function clearLocalPlanner(db: PeptidePlannerDatabase): Promise<void> {
+  await db.transaction('rw', db.plans, db.logs, async () => {
+    await db.plans.clear()
+    await db.logs.clear()
+  })
+}
+
+export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationResult> {
+  const { uid, firestore, db, onPhase } = args
+
+  onPhase?.('reading-local')
+  const local = await readLocal(db)
+
+  const hadLocalData = local.plans.length > 0 || local.logs.length > 0
+
+  onPhase?.('reading-cloud')
+  const cloud = await readCloud(firestore, uid)
+
+  if (!hadLocalData && cloud.plans.length === 0 && cloud.logs.length === 0 && !cloud.settings) {
+    // Nothing to migrate, nothing to seed — just stamp meta and exit.
+    onPhase?.('writing')
+    const batch = writeBatch(firestore)
+    batch.set(doc(firestore, 'users', uid, 'meta', 'migration'), {
+      migratedAt: new Date().toISOString(),
+      schemaVersion: 1,
+    })
+    if (!cloud.settings) {
+      const seeded: AppSettings = {
+        id: 'settings',
+        onboardingAccepted: true,
+        preferredDoseUnit: 'mcg',
+        notificationPermissionAsked: false,
+        updatedAt: new Date().toISOString(),
+      }
+      batch.set(doc(firestore, 'users', uid, 'settings', 'settings'), {
+        ...seeded,
+        schemaVersion: 1,
+      })
+    }
+    await batch.commit()
+    return { plansWritten: 0, logsWritten: 0, duplicateLogsDeleted: 0, hadLocalData: false }
+  }
+
+  const merged = mergePlannerData(local, cloud)
+
+  onPhase?.('writing')
+  await writeCloud(firestore, uid, merged)
+
+  onPhase?.('verifying')
+  const ok = await verifyCloud(firestore, uid, merged)
+  if (!ok) {
+    throw new Error('Cloud verification failed after migration. Local data was not cleared.')
+  }
+
+  if (hadLocalData) {
+    onPhase?.('clearing-local')
+    await clearLocalPlanner(db)
+  }
+
+  return {
+    plansWritten: merged.plans.length,
+    logsWritten: merged.logs.length,
+    duplicateLogsDeleted: merged.deletedLogIds.length,
+    hadLocalData,
+  }
+}

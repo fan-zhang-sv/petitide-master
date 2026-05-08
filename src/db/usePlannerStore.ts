@@ -1,134 +1,125 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { db, getSettings } from './database'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { AppSettings, InjectionLog, PlannedPeptide } from '../types'
-import { createCompletedPastLogs } from '../utils/backfill'
-
-const makeId = () => crypto.randomUUID()
+import { useAuth } from '../auth/AuthProvider'
+import { firestore } from '../lib/firebase'
+import { LocalRepository } from '../sync/localRepository'
+import { RemoteRepository } from '../sync/remoteRepository'
+import type { PlannerRepository, PlannerSnapshot } from '../sync/repository'
 
 export function usePlannerStore() {
-  const [plans, setPlans] = useState<PlannedPeptide[]>([])
-  const [logs, setLogs] = useState<InjectionLog[]>([])
-  const [settings, setSettings] = useState<AppSettings | null>(null)
+  const { user, authLoading, migration } = useAuth()
+  const [snapshot, setSnapshot] = useState<PlannerSnapshot | null>(null)
   const [loading, setLoading] = useState(true)
+  const repositoryRef = useRef<PlannerRepository | null>(null)
 
-  const refresh = useCallback(async () => {
-    const [nextPlans, nextLogs, nextSettings] = await Promise.all([
-      db.plans.orderBy('createdAt').reverse().toArray(),
-      db.logs.orderBy('createdAt').reverse().toArray(),
-      getSettings(),
-    ])
-    setPlans(nextPlans)
-    setLogs(nextLogs)
-    setSettings(nextSettings)
-    setLoading(false)
-  }, [])
+  // Wait for migration to complete before swapping to the remote repo so that
+  // local Dexie data remains the source of truth during the migration window.
+  const ready = !authLoading && (
+    !user || migration.phase === 'done' || migration.phase === 'error' || !firestore
+  )
+
+  const repository = useMemo<PlannerRepository | null>(() => {
+    if (!ready) {
+      return repositoryRef.current
+    }
+    if (user && firestore && migration.phase === 'done') {
+      return new RemoteRepository(firestore, user.uid)
+    }
+    return new LocalRepository()
+    // We intentionally re-create on user/migration changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, migration.phase, ready])
 
   useEffect(() => {
-    // Loading IndexedDB into React state is the app's data subscription boundary.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void refresh()
-  }, [refresh])
+    if (!repository) {
+      return
+    }
+    const previous = repositoryRef.current
+    if (previous && previous !== repository && previous instanceof RemoteRepository) {
+      previous.dispose()
+    }
+    repositoryRef.current = repository
 
-  const activePlans = useMemo(() => plans.filter((plan) => !plan.archived), [plans])
+    setLoading(true)
+    const unsubscribe = repository.subscribe((next) => {
+      setSnapshot(next)
+      setLoading(false)
+    })
+    return () => {
+      unsubscribe()
+    }
+  }, [repository])
+
+  useEffect(() => {
+    return () => {
+      const current = repositoryRef.current
+      if (current instanceof RemoteRepository) {
+        current.dispose()
+      }
+    }
+  }, [])
+
+  const refresh = useCallback(async () => {
+    if (!repository) return
+    const next = await repository.load()
+    setSnapshot(next)
+    setLoading(false)
+  }, [repository])
 
   const acceptOnboarding = useCallback(async () => {
-    const current = await getSettings()
-    await db.settings.put({
-      ...current,
-      onboardingAccepted: true,
-      updatedAt: new Date().toISOString(),
-    })
-    await refresh()
-  }, [refresh])
+    if (!repository) return
+    await repository.acceptOnboarding()
+  }, [repository])
 
   const saveSettings = useCallback(
     async (patch: Partial<AppSettings>) => {
-      const current = await getSettings()
-      await db.settings.put({
-        ...current,
-        ...patch,
-        id: 'settings',
-        updatedAt: new Date().toISOString(),
-      })
-      await refresh()
+      if (!repository) return
+      await repository.saveSettings(patch)
     },
-    [refresh],
+    [repository],
   )
 
   const addPlan = useCallback(
     async (plan: Omit<PlannedPeptide, 'id' | 'createdAt'>) => {
-      const nextPlan: PlannedPeptide = {
-        ...plan,
-        id: makeId(),
-        createdAt: new Date().toISOString(),
+      if (!repository) {
+        throw new Error('Planner storage is not ready yet.')
       }
-      await db.transaction('rw', db.plans, db.logs, async () => {
-        await db.plans.put(nextPlan)
-        const backfillLogs = createCompletedPastLogs(nextPlan, makeId)
-        if (backfillLogs.length > 0) {
-          await db.logs.bulkPut(backfillLogs)
-        }
-      })
-      await refresh()
-      return nextPlan
+      return repository.addPlan(plan)
     },
-    [refresh],
+    [repository],
   )
 
   const updatePlan = useCallback(
     async (id: string, patch: Partial<PlannedPeptide>) => {
-      await db.transaction('rw', db.plans, db.logs, async () => {
-        const existingPlan = await db.plans.get(id)
-        if (!existingPlan) {
-          return
-        }
-        const nextPlan = { ...existingPlan, ...patch }
-        await db.plans.put(nextPlan)
-        const existingLogs = await db.logs.where({ planId: id }).toArray()
-        const existingKeys = new Set(existingLogs.map((log) => `${log.planId}:${log.date}`))
-        const backfillLogs = createCompletedPastLogs(nextPlan, makeId).filter(
-          (log) => !existingKeys.has(`${log.planId}:${log.date}`),
-        )
-        if (backfillLogs.length > 0) {
-          await db.logs.bulkPut(backfillLogs)
-        }
-      })
-      await refresh()
+      if (!repository) return
+      await repository.updatePlan(id, patch)
     },
-    [refresh],
+    [repository],
   )
 
   const archivePlan = useCallback(
     async (id: string) => {
-      await db.plans.update(id, { archived: true })
-      await refresh()
+      if (!repository) return
+      await repository.archivePlan(id)
     },
-    [refresh],
+    [repository],
   )
 
   const addLog = useCallback(
     async (log: Omit<InjectionLog, 'id' | 'createdAt'>) => {
-      await db.logs
-        .where('[planId+date]')
-        .equals([log.planId, log.date])
-        .delete()
-        .catch(async () => {
-          const duplicates = await db.logs.where({ planId: log.planId, date: log.date }).toArray()
-          await db.logs.bulkDelete(duplicates.map((duplicate) => duplicate.id))
-        })
-
-      await db.logs.put({
-        ...log,
-        id: makeId(),
-        createdAt: new Date().toISOString(),
-      })
-      await refresh()
+      if (!repository) return
+      await repository.addLog(log)
     },
-    [refresh],
+    [repository],
   )
 
+  const plans = snapshot?.plans ?? []
+  const logs = snapshot?.logs ?? []
+  const settings = snapshot?.settings ?? null
+  const activePlans = useMemo(() => plans.filter((plan) => !plan.archived), [plans])
+
   return {
-    loading,
+    loading: loading || !ready,
     plans,
     activePlans,
     logs,
