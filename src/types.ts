@@ -53,6 +53,7 @@ export interface PlannedPeptide {
   notes?: string
   calculator?: ReconstitutionResult
   createdAt: string
+  updatedAt?: string
   archived?: boolean
 }
 
@@ -69,6 +70,7 @@ export interface InjectionLog {
   notes?: string
   sideEffects?: string
   createdAt: string
+  updatedAt?: string
 }
 
 export interface AppSettings {

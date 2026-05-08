@@ -10,7 +10,7 @@ export const defaultSettings: AppSettings = {
   updatedAt: new Date().toISOString(),
 }
 
-class PeptidePlannerDatabase extends Dexie {
+export class PeptidePlannerDatabase extends Dexie {
   plans!: Table<PlannedPeptide, string>
   logs!: Table<InjectionLog, string>
   settings!: Table<AppSettings, string>

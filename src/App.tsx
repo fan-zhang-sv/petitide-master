@@ -5,6 +5,7 @@ import { usePlannerStore } from './db/usePlannerStore';
 import type { MainTab, TabConfig } from './types';
 import { todayIso, addIsoDays } from './utils/dates';
 import { getStatusesForDate, getDayPlanStatus } from './utils/cycleEngine';
+import { AuthProvider } from './auth/AuthProvider';
 
 // Layout Components
 import { Sidebar } from './components/layout/Sidebar';
@@ -35,7 +36,7 @@ const desktopTabs: TabConfig[] = [
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
-function App() {
+function AppShell() {
   const store = usePlannerStore();
   const [activeTab, setActiveTab] = useState<MainTab>('today');
 
@@ -147,6 +148,14 @@ function App() {
         )}
       </section>
     </main>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
   );
 }
 

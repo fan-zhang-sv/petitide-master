@@ -1,10 +1,14 @@
 import { Syringe, Archive, Library, AlertTriangle, Check } from 'lucide-react';
+import { useAuth } from '../../auth/AuthProvider';
 
 interface OnboardingProps {
   onAccept: () => Promise<void>;
 }
 
 export function Onboarding({ onAccept }: OnboardingProps) {
+  const { firebaseEnabled, user } = useAuth();
+  const cloudAware = firebaseEnabled || Boolean(user);
+
   return (
     <main className="onboarding">
       <section className="onboarding-panel">
@@ -17,8 +21,12 @@ export function Onboarding({ onAccept }: OnboardingProps) {
           <div className="feature-tile">
             <Archive aria-hidden className="feature-icon" />
             <div>
-              <strong>Local & Private</strong>
-              <span>Track protocols and math securely on your device.</span>
+              <strong>{cloudAware ? 'Local-first, optional sync' : 'Local & Private'}</strong>
+              <span>
+                {cloudAware
+                  ? 'Track protocols on your device, then sign in with Google to sync.'
+                  : 'Track protocols and math securely on your device.'}
+              </span>
             </div>
           </div>
           <div className="feature-tile">
