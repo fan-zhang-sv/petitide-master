@@ -12,7 +12,12 @@ import {
   toMonthKey,
 } from '../../utils/dates';
 import { getStatusesForDate } from '../../utils/cycleEngine';
+import { Button } from '../../components/ui/Button';
+import { Screen } from '../../components/ui/Screen';
+import { SectionHeader } from '../../components/ui/Header';
 import { CalendarStatusRow } from './CalendarStatusRow';
+import styles from '../../styles/app.module.css';
+import { cx } from '../../utils/ui/classNames';
 
 interface CalendarViewProps {
   plans: PlannedPeptide[];
@@ -46,36 +51,36 @@ export function CalendarView({ plans, logs, onLog }: CalendarViewProps) {
   };
 
   return (
-    <section className="screen">
-      <section className="calendar-controls">
+    <Screen>
+      <section className={styles['calendar-controls']}>
         <h2>{monthLabel(selectedMonth)}</h2>
-        <div className="calendar-toolbar">
-          <div className="month-controls" aria-label="Calendar navigation">
-            <button type="button" className="ghost-button small icon-label" onClick={() => changeMonth(previousMonthKey(selectedMonth))}>
+        <div className={styles['calendar-toolbar']}>
+          <div className={styles['month-controls']} aria-label="Calendar navigation">
+            <Button variant="ghost" size="small" className={styles['icon-label']} onClick={() => changeMonth(previousMonthKey(selectedMonth))}>
               <ChevronLeft aria-hidden />
               Prev
-            </button>
-            <button type="button" className="ghost-button small icon-label" onClick={() => changeMonth(toMonthKey())}>
+            </Button>
+            <Button variant="ghost" size="small" className={styles['icon-label']} onClick={() => changeMonth(toMonthKey())}>
               <RotateCcw aria-hidden />
               Today
-            </button>
-            <button type="button" className="ghost-button small icon-label" onClick={() => changeMonth(nextMonthKey(selectedMonth))}>
+            </Button>
+            <Button variant="ghost" size="small" className={styles['icon-label']} onClick={() => changeMonth(nextMonthKey(selectedMonth))}>
               Next
               <ChevronRight aria-hidden />
-            </button>
+            </Button>
           </div>
         </div>
       </section>
 
-      <section className="calendar-workspace">
-        <div className="calendar-month">
-          <div className="weekday-row" aria-hidden>
+      <section className={styles['calendar-workspace']}>
+        <div className={styles['calendar-month']}>
+          <div className={styles['weekday-row']} aria-hidden>
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
               <span key={day}>{day}</span>
             ))}
           </div>
 
-          <div className="calendar-strip">
+          <div className={styles['calendar-strip']}>
             {dates.map((date) => {
               const statuses = getStatusesForDate(plans, logs, date);
               const outsideMonth = date < monthStart || date > monthEnd;
@@ -85,23 +90,29 @@ export function CalendarView({ plans, logs, onLog }: CalendarViewProps) {
               return (
                 <article
                   key={date}
-                  className={`day-cell ${date === todayIso() ? 'today' : ''} ${date === selectedDate ? 'selected' : ''} ${outsideMonth ? 'outside-month' : ''} ${getCycleClass(summary)}`}
+                  className={cx(
+                    styles['day-cell'],
+                    date === todayIso() && styles.today,
+                    date === selectedDate && styles.selected,
+                    outsideMonth && styles['outside-month'],
+                    styles[getCycleClass(summary)],
+                  )}
                 >
                   <button
                     type="button"
-                    className="day-select-button"
+                    className={styles['day-select-button']}
                     aria-pressed={date === selectedDate}
                     aria-label={`${date}. ${daySummaryLabel(summary)}`}
                     onClick={() => selectDate(date)}
                   >
-                    <div className="day-head">
+                    <div className={styles['day-head']}>
                       <strong>{date.slice(8)}</strong>
                       {date === todayIso() && <span>Today</span>}
                     </div>
                     {dayMetrics.length > 0 && (
-                      <div className="day-status-summary" aria-hidden>
+                      <div className={styles['day-status-summary']} aria-hidden>
                         {dayMetrics.map((metric) => (
-                          <span key={metric.kind} className={`day-status-chip ${metric.kind}`} title={metric.label}>
+                          <span key={metric.kind} className={cx(styles['day-status-chip'], styles[metric.kind])} title={metric.label}>
                             <DayMetricIcon kind={metric.kind} />
                             <span>{metric.count}</span>
                           </span>
@@ -115,16 +126,14 @@ export function CalendarView({ plans, logs, onLog }: CalendarViewProps) {
           </div>
         </div>
 
-        <aside className="selected-day-panel">
-          <div className="section-heading">
-            <div>
-              <h2>{selectedDate === todayIso() ? 'Today' : selectedDate}</h2>
-            </div>
-            <span>{selectedStatuses.length} plan{selectedStatuses.length === 1 ? '' : 's'}</span>
-          </div>
-          <div className="selected-day-list">
+        <aside className={styles['selected-day-panel']}>
+          <SectionHeader
+            title={selectedDate === todayIso() ? 'Today' : selectedDate}
+            meta={`${selectedStatuses.length} plan${selectedStatuses.length === 1 ? '' : 's'}`}
+          />
+          <div className={styles['selected-day-list']}>
             {selectedStatuses.length === 0 ? (
-              <p className="muted">No plans on this day.</p>
+              <p className={styles.muted}>No plans on this day.</p>
             ) : (
               selectedStatuses.map((status) => (
                 <CalendarStatusRow
@@ -137,7 +146,7 @@ export function CalendarView({ plans, logs, onLog }: CalendarViewProps) {
           </div>
         </aside>
       </section>
-    </section>
+    </Screen>
   );
 }
 

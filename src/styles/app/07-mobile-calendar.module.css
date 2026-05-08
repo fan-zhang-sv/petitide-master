@@ -1,0 +1,354 @@
+.day-head {
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+.day-head strong {
+  font-size: 0.78rem;
+}
+
+.day-head span {
+  overflow: hidden;
+  font-size: 0.58rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-status-list {
+  gap: 3px;
+}
+
+.calendar-status-row {
+  gap: 3px;
+  padding: 4px;
+  border-left-width: 3px;
+  border-radius: 5px;
+}
+
+.calendar-status-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.calendar-status-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.calendar-status-row strong {
+  overflow: hidden;
+  font-size: 0.62rem;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-status-row em {
+  font-size: 0.58rem;
+}
+
+.status-label {
+  max-width: 100%;
+  padding: 1px 4px;
+  overflow: hidden;
+  font-size: 0.52rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-override {
+  margin-top: 1px;
+}
+
+.calendar-override summary {
+  min-height: 22px;
+  font-size: 0.58rem;
+  line-height: 1;
+}
+
+.calendar-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3px;
+}
+
+.calendar-actions .mini {
+  min-height: 28px;
+  padding-inline: 4px;
+  font-size: 0.58rem;
+}
+
+.calendar-actions .mini svg {
+  width: 12px;
+  height: 12px;
+}
+
+@media (max-width: 340px) {
+  .app-shell {
+    padding-inline: 8px;
+  }
+
+  .tabbar {
+    right: 6px;
+    left: 6px;
+  }
+
+  .tabbar button {
+    font-size: 0.58rem;
+  }
+
+  .calendar-strip,
+  .weekday-row {
+    gap: 2px;
+  }
+
+  .day-cell {
+    padding: 3px;
+  }
+}
+
+@media (min-width: 430px) {
+  .app-shell {
+    padding-inline: 16px;
+  }
+
+  .day-cell {
+    min-height: 92px;
+    padding: 6px;
+  }
+
+  .calendar-status-row strong {
+    font-size: 0.72rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .app-shell {
+    padding: 18px 18px calc(104px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .today-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .secondary-metrics,
+  .metric-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .filter-bar {
+    grid-template-columns: minmax(220px, 1.4fr) repeat(2, minmax(150px, 1fr));
+  }
+
+  .filter-bar .checkbox-label {
+    grid-column: 1 / -1;
+  }
+
+  .planner-list,
+  .catalog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plan-priority-grid,
+  .catalog-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .calendar-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, auto);
+    align-items: end;
+  }
+
+  .month-picker {
+    grid-column: 1 / -1;
+  }
+
+  .legend-item {
+    flex: 0 1 auto;
+  }
+
+  .weekday-row,
+  .calendar-strip {
+    gap: 6px;
+  }
+
+  .day-cell {
+    min-height: 132px;
+    padding: 8px;
+  }
+
+  .calendar-status-row {
+    padding: 6px;
+  }
+
+  .calendar-status-row strong {
+    font-size: 0.8rem;
+  }
+
+  .status-label,
+  .calendar-override summary,
+  .calendar-actions .mini {
+    font-size: 0.68rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-shell:not(.centered) {
+    display: grid;
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+    padding: 24px 28px;
+  }
+
+  .topbar,
+  .mobile-only {
+    display: none !important;
+  }
+
+  .desktop-sidebar {
+    position: sticky;
+    top: 32px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand-text,
+  .nav-label {
+    display: none;
+  }
+
+  .sidebar-nav button {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .sidebar-footer {
+    display: flex;
+    justify-content: center;
+  }
+
+  .month-picker {
+    grid-column: auto;
+  }
+
+  .calendar-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, auto) 180px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-shell:not(.centered) {
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 32px;
+    padding: 24px 32px;
+  }
+
+  .brand-text,
+  .nav-label {
+    display: block;
+  }
+
+  .brand-logo {
+    display: none;
+  }
+
+  .sidebar-nav button {
+    justify-content: flex-start;
+    padding: 10px 14px;
+  }
+
+  .sidebar-footer {
+    justify-content: flex-start;
+  }
+
+  .planner-list,
+  .catalog-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .day-cell {
+    min-height: 160px;
+  }
+}
+
+/* Usability refinement: mobile calendar overview + readable selected day */
+.app-content {
+  min-width: 0;
+  width: 100%;
+}
+
+.stats-panel {
+  border-color: var(--line);
+  background: var(--panel);
+}
+
+.day-cell {
+  display: block;
+}
+
+.day-select-button {
+  display: grid;
+  width: 100%;
+  min-height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.day-cell.selected {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.day-markers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+  min-height: 8px;
+}
+
+.day-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.day-dot.done {
+  background: var(--status-done);
+}
+
+.day-dot.due {
+  background: var(--status-due);
+}
+
+.day-dot.missed {
+  background: var(--status-missed);
+}
+
+.day-dot.off {
+  background: var(--status-off);
+}
+
+.day-count {
+  justify-self: end;
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.selected-day-panel {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}

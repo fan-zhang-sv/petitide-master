@@ -1,7 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import type { PlannedPeptide, RouteType, FrequencyConfig } from '../../types';
 import { ROUTE_OPTIONS } from '../../constants';
+import { Button } from '../../components/ui/Button';
 import { FormGrid } from '../../components/ui/FormGrid';
+import { SectionHeader } from '../../components/ui/Header';
+import {
+  PlanDoseMathSection,
+} from './PlanDoseMathSection';
+import { buildDoseMathPatch, defaultDoseMathInput, getDoseMathResult } from './planDoseMath';
+import styles from '../../styles/app.module.css';
 
 interface PlanEditDialogProps {
   plan: PlannedPeptide;
@@ -27,10 +34,20 @@ export function PlanEditDialog({
   const [reminderTime, setReminderTime] = useState(plan.reminderTime ?? '08:00');
   const [sites, setSites] = useState(plan.injectionSites.join(', '));
   const [notes, setNotes] = useState(plan.notes ?? '');
+  const [doseMathOpen, setDoseMathOpen] = useState(false);
+  const [doseMathInput, setDoseMathInput] = useState(defaultDoseMathInput);
   const [expertOpen, setExpertOpen] = useState(false);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
+    const doseMathPatch = buildDoseMathPatch({
+      calculatorEnabled: doseMathOpen,
+      currentDose: dose,
+      input: doseMathInput,
+      result: getDoseMathResult(doseMathInput),
+      confirmDoseSync: (targetDose, currentDose) =>
+        window.confirm(`Update plan dose from ${currentDose} to ${targetDose}?`),
+    });
     void onSave({
       name,
       dose,
@@ -48,21 +65,18 @@ export function PlanEditDialog({
         .map((site) => site.trim())
         .filter(Boolean),
       notes,
+      ...doseMathPatch,
     });
   };
 
   return (
-    <div className="dialog-backdrop" role="presentation">
-      <form className="dialog" onSubmit={submit}>
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Editing protocol</p>
-            <h2>{plan.name}</h2>
-          </div>
-          <button type="button" className="ghost-button small" onClick={onClose}>
-            Cancel
-          </button>
-        </div>
+    <div className={styles['dialog-backdrop']} role="presentation">
+      <form className={styles.dialog} onSubmit={submit}>
+        <SectionHeader
+          title={plan.name}
+          eyebrow="Editing protocol"
+          actions={<Button variant="ghost" size="small" onClick={onClose}>Cancel</Button>}
+        />
         
         <FormGrid>
            <label>
@@ -127,7 +141,15 @@ export function PlanEditDialog({
            </label>
         </FormGrid>
 
-        <details className="expert-panel" open={expertOpen} onToggle={(event) => setExpertOpen(event.currentTarget.open)}>
+        <PlanDoseMathSection
+          input={doseMathInput}
+          open={doseMathOpen}
+          existingResult={plan.calculator}
+          onChange={setDoseMathInput}
+          onOpenChange={setDoseMathOpen}
+        />
+
+        <details className={styles['expert-panel']} open={expertOpen} onToggle={(event) => setExpertOpen(event.currentTarget.open)}>
            <summary>Expert options</summary>
            <FormGrid>
              <label>
@@ -151,9 +173,9 @@ export function PlanEditDialog({
            </label>
         </details>
 
-        <button type="submit" className="primary-button">
+        <Button type="submit" variant="primary">
           Save changes
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -4,7 +4,11 @@ import type { PlannedPeptide, InjectionLog, DayPlanStatus } from '../../types';
 import { addIsoDays, todayIso } from '../../utils/dates';
 import { getDayPlanStatus } from '../../utils/cycleEngine';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { PageHeader } from '../../components/ui/Header';
+import { Screen } from '../../components/ui/Screen';
 import { StatusCard } from './StatusCard';
+import styles from '../../styles/app.module.css';
+import { cx } from '../../utils/ui/classNames';
 
 interface DashboardProps {
   plans: PlannedPeptide[];
@@ -65,15 +69,10 @@ export function Dashboard({
   }
 
   return (
-    <section className="screen">
-      <section className="today-header">
-        <div>
-          <h2>Today</h2>
-          <p>{today}</p>
-        </div>
-      </section>
+    <Screen>
+      <PageHeader variant="today" title="Today" meta={today} />
 
-      <section className="today-stat-grid" aria-label="Today context">
+      <section className={styles['today-stat-grid']} aria-label="Today context">
         <TodayStat
           icon={<Gauge aria-hidden />}
           label="7-day completion"
@@ -100,11 +99,11 @@ export function Dashboard({
         />
       </section>
 
-      <section className="today-board">
-        <div className="today-column primary">
+      <section className={styles['today-board']}>
+        <div className={cx(styles['today-column'], styles.primary)}>
           <GroupHeading icon={<X aria-hidden />} title="Not done" count={actionItems.length} />
           {actionItems.length > 0 ? (
-            <div className="today-list">
+            <div className={styles['today-list']}>
               {actionItems.map((status) => (
                 <StatusCard
                   key={`${status.plan.id}-${status.date}`}
@@ -115,7 +114,7 @@ export function Dashboard({
               ))}
             </div>
           ) : (
-            <div className="today-empty-state">
+            <div className={styles['today-empty-state']}>
               <Check aria-hidden />
               <span>Clear</span>
             </div>
@@ -123,9 +122,9 @@ export function Dashboard({
         </div>
 
         {completedToday.length > 0 && (
-          <div className="today-column">
+          <div className={styles['today-column']}>
             <GroupHeading icon={<Check aria-hidden />} title="Done" count={completedToday.length} />
-            <div className="today-list">
+            <div className={styles['today-list']}>
               {completedToday.map((status) => (
                 <StatusCard
                   key={`${status.plan.id}-logged`}
@@ -139,9 +138,9 @@ export function Dashboard({
         )}
 
         {offCycleToday.length > 0 && (
-          <div className="today-column quiet">
+          <div className={cx(styles['today-column'], styles.quiet)}>
             <GroupHeading icon={<Pause aria-hidden />} title="Off cycle" count={offCycleToday.length} />
-            <div className="today-list">
+            <div className={styles['today-list']}>
               {offCycleToday.map((status) => (
                 <StatusCard
                   key={`${status.plan.id}-off`}
@@ -154,7 +153,7 @@ export function Dashboard({
           </div>
         )}
       </section>
-    </section>
+    </Screen>
   );
 }
 
@@ -170,7 +169,7 @@ function TodayStat({
   detail: string;
 }) {
   return (
-    <article className="today-stat-card">
+    <article className={styles['today-stat-card']}>
       <span>{icon}</span>
       <div>
         <p>{label}</p>
@@ -183,7 +182,7 @@ function TodayStat({
 
 function GroupHeading({ icon, title, count }: { icon: ReactNode; title: string; count: number }) {
   return (
-    <div className="today-group-heading">
+    <div className={styles['today-group-heading']}>
       <span>
         {icon}
         {title}

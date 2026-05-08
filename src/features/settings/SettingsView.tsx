@@ -1,8 +1,13 @@
 import type { ChangeEvent } from 'react';
-import { Download, Upload, RotateCcw, Shield, AlertTriangle } from 'lucide-react';
+import { Database, Download, RotateCcw, Upload } from 'lucide-react';
 import type { AppSettings } from '../../types';
 import { exportPlannerData, importPlannerData, clearPlannerData } from '../../db/database';
+import { Card } from '../../components/ui/Card';
 import { FormGrid } from '../../components/ui/FormGrid';
+import { MenuRow } from '../../components/ui/MenuRow';
+import { Screen } from '../../components/ui/Screen';
+import { PageHeader, SectionHeader } from '../../components/ui/Header';
+import styles from '../../styles/app.module.css';
 
 interface SettingsViewProps {
   settings: AppSettings;
@@ -42,11 +47,15 @@ export function SettingsView({
   };
 
   return (
-    <section className="screen settings-layout">
-      <div className="tool-panel">
-        <div className="section-heading">
-          <h2>Preferences</h2>
-        </div>
+    <Screen className={styles['settings-layout']}>
+      <PageHeader
+        variant="plain"
+        title="Settings"
+        meta="Local preferences and backup"
+      />
+
+      <Card variant="panel" className={styles['settings-panel']}>
+        <SectionHeader title="Preferences" />
         <FormGrid>
           <label>
             Preferred dose unit
@@ -61,55 +70,46 @@ export function SettingsView({
           </label>
         </FormGrid>
 
-        <div className="info-card-list">
-          <div className="info-card">
-            <Shield aria-hidden className="info-icon" />
-            <div>
-              <strong>Privacy First</strong>
-              <p>Data stays entirely on your device.</p>
-            </div>
-          </div>
-          <div className="info-card warning">
-            <AlertTriangle aria-hidden className="info-icon" />
-            <div>
-              <strong>Not Medical Advice</strong>
-              <p>Educational tool only. Consult a clinician.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        <p className={styles['settings-note']}>Planner data stays on this device unless you export or import a backup.</p>
+      </Card>
 
-      <aside className="result-panel">
-        <div className="section-heading">
-          <h2>Data Management</h2>
-        </div>
-        <div className="stack">
-          <button type="button" className="menu-row" onClick={() => void exportPlannerData()}>
-            <div className="menu-icon"><Download aria-hidden /></div>
-            <div className="menu-info">
-              <strong>Export JSON</strong>
-              <p>Download a backup of your data</p>
-            </div>
-          </button>
+      <Card as="aside" variant="panel" className={styles['settings-panel']}>
+        <SectionHeader
+          title="Backup"
+          meta="JSON import and export"
+          actions={<Database aria-hidden className={styles['settings-heading-icon']} />}
+        />
+        <div className={styles.stack}>
+          <MenuRow
+            icon={<Download aria-hidden />}
+            title="Export JSON"
+            description="Download a backup of your data"
+            onClick={() => void exportPlannerData()}
+          />
 
-          <label className="menu-row clickable">
-            <div className="menu-icon"><Upload aria-hidden /></div>
-            <div className="menu-info">
-              <strong>Import JSON</strong>
-              <p>Restore from a previous backup</p>
-            </div>
+          <MenuRow
+            as="label"
+            icon={<Upload aria-hidden />}
+            title="Import JSON"
+            description="Restore from a previous backup"
+          >
             <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
-          </label>
-
-          <button type="button" className="menu-row danger" onClick={handleClear}>
-            <div className="menu-icon"><RotateCcw aria-hidden /></div>
-            <div className="menu-info">
-              <strong>Clear local data</strong>
-              <p>Permanently delete everything</p>
-            </div>
-          </button>
+          </MenuRow>
         </div>
-      </aside>
-    </section>
+      </Card>
+
+      <Card variant="panel" className={styles['settings-panel']}>
+        <SectionHeader title="Reset" meta="Destructive local action" />
+        <div className={styles.stack}>
+          <MenuRow
+            danger
+            icon={<RotateCcw aria-hidden />}
+            title="Clear local data"
+            description="Permanently delete everything"
+            onClick={handleClear}
+          />
+        </div>
+      </Card>
+    </Screen>
   );
 }

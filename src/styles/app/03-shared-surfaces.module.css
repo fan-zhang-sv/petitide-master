@@ -1,0 +1,348 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
+  animation: scaleIn var(--duration-fast) var(--ease-enter) both;
+}
+
+.pill.done,
+.pill.active,
+.pill.clinical {
+  background: var(--status-done-bg);
+  color: var(--status-done);
+}
+
+.pill.off,
+.pill.wellness,
+.pill.limited {
+  background: var(--status-off-bg);
+  color: var(--status-off);
+}
+
+.pill.experimental,
+.pill.advanced {
+  background: var(--status-missed-bg);
+  color: var(--status-missed);
+}
+
+.log-form,
+.toolbar,
+.form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.inline-details {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px dashed var(--line);
+  border-radius: 7px;
+}
+
+.inline-details label {
+  margin-top: 10px;
+}
+
+.notice-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 24px 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.banner-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.filter-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 24px;
+}
+
+/* Removed .toolbar grid-template-columns, using auto-fit in .filter-bar */
+
+.app-shell label,
+.onboarding label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.app-shell input,
+.app-shell select,
+.app-shell textarea,
+.onboarding input,
+.onboarding select,
+.onboarding textarea {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--field);
+  color: var(--ink);
+  padding: 8px 10px;
+  transition: border-color var(--duration-fast) var(--ease-clinical),
+              box-shadow var(--duration-fast) var(--ease-clinical);
+}
+
+.app-shell input:focus,
+.app-shell select:focus,
+.app-shell textarea:focus,
+.onboarding input:focus,
+.onboarding select:focus,
+.onboarding textarea:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(35, 49, 45, 0.08);
+}
+
+.app-shell textarea,
+.onboarding textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  grid-auto-flow: column;
+  align-items: center;
+  min-height: 40px;
+}
+
+.checkbox-label input {
+  width: 18px;
+  min-height: 18px;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.source-note {
+  margin-bottom: 14px;
+  color: var(--muted);
+}
+
+.catalog-grid,
+.planner-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.catalog-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.app-shell dl,
+.app-shell dd,
+.onboarding dl,
+.onboarding dd {
+  margin: 0;
+}
+
+.app-shell dl,
+.onboarding dl {
+  display: grid;
+  gap: 8px;
+}
+
+.app-shell dt,
+.onboarding dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(35, 49, 45, 0.36);
+  animation: fadeIn var(--duration-fast) var(--ease-enter);
+}
+
+.dialog {
+  width: min(780px, 100%);
+  max-height: min(840px, 92svh);
+  overflow: auto;
+  padding: 18px;
+  animation: dialogSlideUp var(--duration-normal) var(--ease-clinical);
+}
+
+.compact-notice {
+  margin: 0 0 14px;
+}
+
+.expert-panel {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+
+.expert-panel .form-grid {
+  margin-top: 12px;
+}
+
+.form-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.sub-view {
+  animation: slideUp var(--duration-normal) var(--ease-enter);
+}
+
+.sub-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 0 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.plans-header {
+  margin-bottom: 16px;
+}
+
+.plans-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  text-align: left;
+  min-height: 72px;
+  color: var(--ink);
+  transition: background var(--duration-fast) var(--ease-clinical);
+}
+
+.menu-row:last-child {
+  border-bottom: none;
+}
+
+.menu-row:hover {
+  background: var(--field);
+}
+
+.menu-row:active {
+  background: var(--line);
+}
+
+.menu-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.menu-info {
+  flex-grow: 1;
+}
+
+.menu-info h3 {
+  font-size: 1.05rem;
+  margin-bottom: 2px;
+}
+
+.menu-info strong {
+  display: block;
+  font-size: 1.05rem;
+  margin-bottom: 2px;
+}
+
+.menu-info p {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.menu-chevron {
+  color: var(--muted);
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.detail-grid div,
+.calc-summary {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--field);
+}
+
+.detail-grid strong {
+  display: block;
+}
+
+.calc-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.cycle-review-band {
+  border-color: var(--status-transition);
+}

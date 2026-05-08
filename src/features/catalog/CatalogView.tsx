@@ -4,7 +4,12 @@ import type { ProtocolTemplate, PlannedPeptide } from '../../types';
 import { PROTOCOL_SOURCE_URL, protocolCatalog } from '../../data/protocolCatalog';
 import { EVIDENCE_LABELS, ROUTE_OPTIONS } from '../../constants';
 import { frequencyLabel } from '../../utils/cycleEngine';
+import { PageHeader } from '../../components/ui/Header';
+import { Pill } from '../../components/ui/Badge';
+import { Screen } from '../../components/ui/Screen';
 import { PlanDialog } from './PlanDialog';
+import styles from '../../styles/app.module.css';
+import { cx } from '../../utils/ui/classNames';
 
 interface CatalogViewProps {
   onAddPlan: (plan: Omit<PlannedPeptide, 'id' | 'createdAt'>) => Promise<PlannedPeptide>;
@@ -50,20 +55,21 @@ export function CatalogView({ onAddPlan }: CatalogViewProps) {
   });
 
   return (
-    <section className="screen catalog-screen">
-      <header className="catalog-topline">
-        <div>
-          <h2>Catalog</h2>
-          <p>{filtered.length} of {protocolCatalog.length} templates</p>
-        </div>
-        <a className="catalog-source-link" href={PROTOCOL_SOURCE_URL} target="_blank" rel="noreferrer">
-          <ExternalLink aria-hidden />
-          Source
-        </a>
-      </header>
+    <Screen className={styles['catalog-screen']}>
+      <PageHeader
+        variant="catalog"
+        title="Catalog"
+        meta={`${filtered.length} of ${protocolCatalog.length} templates`}
+        actions={(
+          <a className={styles['catalog-source-link']} href={PROTOCOL_SOURCE_URL} target="_blank" rel="noreferrer">
+            <ExternalLink aria-hidden />
+            Source
+          </a>
+        )}
+      />
 
-      <div className="catalog-filter-panel" aria-label="Catalog filters">
-        <label className="catalog-search">
+      <div className={styles['catalog-filter-panel']} aria-label="Catalog filters">
+        <label className={styles['catalog-search']}>
           <Search aria-hidden />
           <input
             value={query}
@@ -71,7 +77,7 @@ export function CatalogView({ onAddPlan }: CatalogViewProps) {
             placeholder="Search name, dose, route, benefit, flag"
           />
         </label>
-        <div className="catalog-filter-grid">
+        <div className={styles['catalog-filter-grid']}>
           <label>
             <SlidersHorizontal aria-hidden />
             <span>Category</span>
@@ -108,20 +114,20 @@ export function CatalogView({ onAddPlan }: CatalogViewProps) {
         </div>
       </div>
 
-      <div className="catalog-disclaimer">
+      <div className={styles['catalog-disclaimer']}>
         <Activity aria-hidden />
         <span>Community references only. Verify before use.</span>
       </div>
 
-      <div className="catalog-board">
+      <div className={styles['catalog-board']}>
         {filtered.map((item, index) => (
           <article
             key={item.id}
-            className={`catalog-row ${item.evidence}`}
+            className={cx(styles['catalog-row'], styles[item.evidence])}
             style={{ animationDelay: `${index * 28}ms` }}
           >
-            <div className="catalog-row-main">
-              <div className="catalog-title-line">
+            <div className={styles['catalog-row-main']}>
+              <div className={styles['catalog-title-line']}>
                 <div>
                   <h3>{item.name}</h3>
                   <p>
@@ -130,10 +136,10 @@ export function CatalogView({ onAddPlan }: CatalogViewProps) {
                     {item.aliases?.length ? <span>Aliases: {item.aliases.join(', ')}</span> : null}
                   </p>
                 </div>
-                <span className={`pill ${item.evidence}`}>{EVIDENCE_LABELS[item.evidence]}</span>
+                <Pill tone={item.evidence}>{EVIDENCE_LABELS[item.evidence]}</Pill>
               </div>
 
-              <dl className="catalog-fact-grid">
+              <dl className={styles['catalog-fact-grid']}>
                 <div>
                   <dt>Dose</dt>
                   <dd>{item.typicalDose}</dd>
@@ -160,7 +166,7 @@ export function CatalogView({ onAddPlan }: CatalogViewProps) {
                 </div>
               </dl>
 
-              <div className="catalog-copy-grid">
+              <div className={styles['catalog-copy-grid']}>
                 <div>
                   <strong>Route note</strong>
                   <p>{item.routeText}</p>
@@ -175,14 +181,14 @@ export function CatalogView({ onAddPlan }: CatalogViewProps) {
                 </div>
               </div>
 
-              <div className="catalog-flag-line">
+              <div className={styles['catalog-flag-line']}>
                 {item.flags.map((flag) => (
                   <span key={flag}>{flag}</span>
                 ))}
               </div>
             </div>
 
-            <button type="button" className="catalog-add-button" onClick={() => setSelected(item)}>
+            <button type="button" className={styles['catalog-add-button']} onClick={() => setSelected(item)}>
               <Plus aria-hidden />
               Add
             </button>
@@ -200,7 +206,7 @@ export function CatalogView({ onAddPlan }: CatalogViewProps) {
           }}
         />
       )}
-    </section>
+    </Screen>
   );
 }
 

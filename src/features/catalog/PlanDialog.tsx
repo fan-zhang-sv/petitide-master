@@ -3,7 +3,14 @@ import { Plus } from 'lucide-react';
 import type { ProtocolTemplate, PlannedPeptide, RouteType, FrequencyConfig } from '../../types';
 import { todayIso } from '../../utils/dates';
 import { ROUTE_OPTIONS } from '../../constants';
+import { Button } from '../../components/ui/Button';
 import { FormGrid } from '../../components/ui/FormGrid';
+import { SectionHeader } from '../../components/ui/Header';
+import {
+  PlanDoseMathSection,
+} from '../plans/PlanDoseMathSection';
+import { buildDoseMathPatch, defaultDoseMathInput, getDoseMathResult } from '../plans/planDoseMath';
+import styles from '../../styles/app.module.css';
 
 const defaultSites = ['Abdomen L', 'Abdomen R', 'Thigh L', 'Thigh R'];
 
@@ -31,10 +38,20 @@ export function PlanDialog({
   const [reminderTime, setReminderTime] = useState('08:00');
   const [sites, setSites] = useState(defaultSites.join(', '));
   const [notes, setNotes] = useState(template.notes);
+  const [doseMathOpen, setDoseMathOpen] = useState(false);
+  const [doseMathInput, setDoseMathInput] = useState(defaultDoseMathInput);
   const [expertOpen, setExpertOpen] = useState(false);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
+    const doseMathPatch = buildDoseMathPatch({
+      calculatorEnabled: doseMathOpen,
+      currentDose: dose,
+      input: doseMathInput,
+      result: getDoseMathResult(doseMathInput),
+      confirmDoseSync: (targetDose, currentDose) =>
+        window.confirm(`Update plan dose from ${currentDose} to ${targetDose}?`),
+    });
     void onAdd({
       templateId: template.id,
       name,
@@ -53,21 +70,18 @@ export function PlanDialog({
         .map((site) => site.trim())
         .filter(Boolean),
       notes,
+      ...doseMathPatch,
     });
   };
 
   return (
-    <div className="dialog-backdrop" role="presentation">
-      <form className="dialog" onSubmit={submit}>
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Quick setup</p>
-            <h2>Configure {template.name}</h2>
-          </div>
-          <button type="button" className="ghost-button small" onClick={onClose}>
-            Close
-          </button>
-        </div>
+    <div className={styles['dialog-backdrop']} role="presentation">
+      <form className={styles.dialog} onSubmit={submit}>
+        <SectionHeader
+          title={`Configure ${template.name}`}
+          eyebrow="Quick setup"
+          actions={<Button variant="ghost" size="small" onClick={onClose}>Close</Button>}
+        />
         
         <FormGrid>
            <label>
@@ -132,7 +146,14 @@ export function PlanDialog({
            </label>
         </FormGrid>
 
-        <details className="expert-panel" open={expertOpen} onToggle={(event) => setExpertOpen(event.currentTarget.open)}>
+        <PlanDoseMathSection
+          input={doseMathInput}
+          open={doseMathOpen}
+          onChange={setDoseMathInput}
+          onOpenChange={setDoseMathOpen}
+        />
+
+        <details className={styles['expert-panel']} open={expertOpen} onToggle={(event) => setExpertOpen(event.currentTarget.open)}>
            <summary>Expert options</summary>
            <FormGrid>
              <label>
@@ -156,10 +177,10 @@ export function PlanDialog({
            </label>
         </details>
 
-        <button type="submit" className="primary-button">
+        <Button type="submit" variant="primary">
           <Plus aria-hidden />
           Save plan
-        </button>
+        </Button>
       </form>
     </div>
   );

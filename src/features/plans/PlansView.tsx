@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { Library, Plus } from 'lucide-react';
 import type { PlannedPeptide, InjectionLog } from '../../types';
+import { Button } from '../../components/ui/Button';
+import { PageHeader } from '../../components/ui/Header';
+import { SubView } from '../../components/ui/SubView';
 import { CatalogView } from '../catalog/CatalogView';
 import { PlannerView } from './PlannerView';
+import styles from '../../styles/app.module.css';
 
 interface PlansViewProps {
   plans: PlannedPeptide[];
@@ -23,12 +27,7 @@ export function PlansView({
 
   if (showCatalog) {
     return (
-      <div className="sub-view">
-        <header className="sub-header">
-          <button type="button" className="ghost-button small" onClick={() => setShowCatalog(false)}>
-            ← Back to Plans
-          </button>
-        </header>
+      <SubView backLabel="← Back to Plans" onBack={() => setShowCatalog(false)}>
         <CatalogView
           onAddPlan={async (plan) => {
             const newPlan = await onAddPlan(plan);
@@ -36,22 +35,23 @@ export function PlansView({
             return newPlan;
           }}
         />
-      </div>
+      </SubView>
     );
   }
 
   return (
-    <div className="plans-wrapper">
-      <header className="plans-topline">
-        <div>
-          <h2>Plans</h2>
-          <p>{plans.length} active</p>
-        </div>
-        <button type="button" className="primary-button small" onClick={() => setShowCatalog(true)}>
-          {plans.length > 0 ? <Library aria-hidden /> : <Plus aria-hidden />}
-          {plans.length > 0 ? 'Catalog' : 'Add plan'}
-        </button>
-      </header>
+    <div className={styles['plans-wrapper']}>
+      <PageHeader
+        variant="plans"
+        title="Plans"
+        meta={`${plans.length} active`}
+        actions={(
+          <Button variant="primary" size="small" onClick={() => setShowCatalog(true)}>
+            {plans.length > 0 ? <Library aria-hidden /> : <Plus aria-hidden />}
+            {plans.length > 0 ? 'Catalog' : 'Browse catalog'}
+          </Button>
+        )}
+      />
       <PlannerView
         plans={plans}
         logs={logs}

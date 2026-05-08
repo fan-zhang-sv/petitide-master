@@ -1,4 +1,6 @@
 import type { MainTab, TabConfig } from '../../types';
+import styles from '../../styles/app.module.css';
+import { cx } from '../../utils/ui/classNames';
 
 interface MobileTabbarProps {
   activeTab: MainTab;
@@ -8,25 +10,17 @@ interface MobileTabbarProps {
 
 export function MobileTabbar({ activeTab, tabs, onTabChange }: MobileTabbarProps) {
   return (
-    <nav className="tabbar mobile-only" aria-label="Mobile Primary">
+    <nav className={cx(styles.tabbar, styles['mobile-only'])} aria-label="Mobile Primary">
       {tabs.map((tab) => {
         const Icon = tab.icon;
-        const isActive = activeTab === tab.id || (tab.id === 'tools' && ['dose-math', 'settings'].includes(activeTab));
+        const isActive = activeTab === tab.id;
         
         return (
           <button
             key={tab.id}
             type="button"
-            className={isActive ? 'active' : ''}
-            onClick={() => {
-              if (tab.id === 'tools') {
-                if (activeTab === 'settings') onTabChange('settings');
-                else if (activeTab === 'dose-math') onTabChange('dose-math');
-                else onTabChange('tools');
-              } else {
-                onTabChange(tab.id);
-              }
-            }}
+            className={isActive ? styles.active : ''}
+            onClick={() => onTabChange(tab.id)}
           >
             <Icon aria-hidden />
             <span>{tab.label}</span>

@@ -1,0 +1,346 @@
+@media (max-width: 639px) {
+  .calendar-workspace,
+  .weekday-row,
+  .calendar-strip {
+    display: grid;
+  }
+
+  .selected-day-panel {
+    display: block;
+  }
+
+  .calendar-controls {
+    display: grid;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+
+  .calendar-toolbar {
+    justify-content: stretch;
+  }
+
+  .calendar-toolbar .month-controls {
+    display: grid;
+    flex: 1 1 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .calendar-toolbar .month-controls .ghost-button {
+    min-height: 36px;
+    padding-inline: 6px;
+    font-size: 0.82rem;
+  }
+
+  .weekday-row,
+  .calendar-strip {
+    gap: 3px;
+  }
+
+  .weekday-row {
+    margin-bottom: 3px;
+    font-size: 0.62rem;
+  }
+
+  .day-select-button {
+    align-content: stretch;
+    gap: 4px;
+    grid-template-rows: auto auto;
+    height: 100%;
+    min-height: 0;
+    padding: 5px 4px;
+    overflow: hidden;
+  }
+
+  .day-cell {
+    height: 76px;
+    min-height: 0;
+    border-radius: 6px;
+  }
+
+  .day-head {
+    display: block;
+  }
+
+  .day-head strong {
+    font-size: 0.78rem;
+  }
+
+  .day-head span {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.48rem;
+  }
+
+  .day-status-summary {
+    align-self: start;
+    gap: 3px;
+    overflow: hidden;
+  }
+
+  .day-cell .day-status-chip {
+    min-height: 15px;
+    padding: 2px 3px;
+    border-radius: 5px;
+    font-size: 0.48rem;
+  }
+
+  .day-cell .day-status-chip svg {
+    width: 9px;
+    height: 9px;
+  }
+
+  .selected-day-panel {
+    padding: 10px;
+    margin-bottom: 96px;
+    border-radius: 8px;
+    box-shadow: none;
+  }
+
+  .selected-day-panel .section-heading {
+    min-height: 28px;
+    margin-bottom: 8px;
+  }
+
+  .selected-day-panel .calendar-status-row {
+    gap: 8px;
+    padding: 9px 10px;
+    border-left-width: 4px;
+    border-radius: 7px;
+  }
+
+  .selected-day-panel .calendar-actions .mini {
+    min-height: 36px;
+  }
+}
+
+@media (min-width: 768px) {
+  .day-cell {
+    min-height: 108px;
+  }
+}
+
+@media (min-width: 980px) {
+  .calendar-workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(310px, 350px);
+  }
+
+  .selected-day-panel {
+    position: sticky;
+    top: 24px;
+    max-height: calc(100svh - 48px);
+    overflow: auto;
+  }
+}
+
+@media (min-width: 1180px) {
+  .day-cell {
+    min-height: 116px;
+  }
+
+  .day-cell .day-status-chip {
+    font-size: 0.62rem;
+  }
+}
+
+/* Today redesign: direct action board */
+.today-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.today-header h2 {
+  margin: 0;
+  font-size: 1.28rem;
+  line-height: 1.1;
+}
+
+.today-header p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.today-counts {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.today-counts span,
+.today-group-heading span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.today-counts span {
+  min-height: 32px;
+  min-width: 44px;
+  justify-content: center;
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.today-counts svg,
+.today-group-heading svg,
+.today-status-badges svg {
+  width: 13px;
+  height: 13px;
+}
+
+.today-counts .not-done {
+  border-color: var(--status-due);
+  background: var(--status-due-bg);
+  color: var(--status-due);
+}
+
+.today-counts .done,
+.today-counts .clear {
+  border-color: var(--status-done);
+  background: var(--status-done-bg);
+  color: var(--status-done);
+}
+
+.today-counts .off {
+  border-color: var(--status-off);
+  background: var(--status-off-bg);
+  color: var(--status-off);
+}
+
+.today-board {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+
+.today-column {
+  display: grid;
+  gap: 8px;
+}
+
+.today-group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 34px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.today-group-heading strong {
+  color: var(--ink);
+  font-size: 0.98rem;
+}
+
+.today-list {
+  display: grid;
+  gap: 8px;
+}
+
+.today-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 96px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--status-done-bg);
+  color: var(--status-done);
+  font-weight: 900;
+}
+
+.today-empty-state svg {
+  width: 18px;
+  height: 18px;
+}
+
+.today-board .status-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 86px;
+  padding: 10px 12px;
+  border-left-width: 5px;
+  box-shadow: none;
+}
+
+.today-board .status-card.not-done {
+  border-left-color: var(--status-due);
+  background: var(--status-due-bg);
+}
+
+.today-board .status-card.done {
+  border-left-color: var(--status-done);
+  background: var(--status-done-bg);
+}
+
+.today-board .status-card.off {
+  border-left-color: var(--status-off);
+  background: var(--status-off-bg);
+  opacity: 1;
+}
+
+.today-board .status-card.on {
+  border-left-color: var(--status-on);
+  background: var(--status-on-bg);
+}
+
+.status-card-main {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.today-status-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.today-board .status-card h3 {
+  overflow: hidden;
+  font-size: 0.98rem;
+  line-height: 1.12;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today-board .status-card p {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.today-row-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(96px, 1fr));
+  gap: 6px;
+}
+
+.today-row-actions .small {
+  min-height: 34px;
+  padding-inline: 9px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}

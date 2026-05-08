@@ -1,0 +1,315 @@
+.selected-day-list {
+  display: grid;
+  gap: 10px;
+}
+
+.tabbar button:not(.active) {
+  background: transparent;
+  color: var(--muted);
+}
+
+.tabbar button.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.tabbar button {
+  transition: none;
+}
+
+.sidebar-nav button {
+  transition: none;
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    width: min(1440px, 100%);
+  }
+
+  .app-content {
+    max-width: 1120px;
+  }
+
+  .planner-list,
+  .catalog-grid {
+    grid-template-columns: repeat(2, minmax(320px, 1fr));
+  }
+
+  .calendar-controls,
+  .weekday-row,
+  .calendar-strip,
+  .selected-day-panel {
+    width: 100%;
+  }
+}
+
+/* Calendar redesign: one grid, one selected-day panel */
+.calendar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+}
+
+.calendar-controls h2 {
+  margin: 0;
+  font-size: 1.28rem;
+  line-height: 1.1;
+}
+
+.calendar-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.calendar-toolbar .month-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.calendar-toolbar .month-controls .ghost-button {
+  min-height: 38px;
+  padding-inline: 9px;
+}
+
+.calendar-workspace {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+
+.calendar-month {
+  min-width: 0;
+}
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.calendar-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.day-cell {
+  min-width: 0;
+  min-height: 88px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+  box-shadow: none;
+}
+
+.day-cell.outside-month {
+  opacity: 0.38;
+}
+
+.day-cell.today,
+.day-cell.selected {
+  border-color: var(--ink);
+}
+
+.day-cell.selected {
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.day-cell.transition-day {
+  border-color: var(--status-transition);
+}
+
+.day-cell.on-day::before {
+  background: var(--status-on);
+}
+
+.day-cell.off-day::before {
+  background: var(--status-off);
+}
+
+.day-cell.mixed-cycle-day::before {
+  background: linear-gradient(to bottom, var(--status-on) 0 50%, var(--status-off) 50% 100%);
+}
+
+.day-select-button {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  grid-template-rows: auto 1fr;
+  width: 100%;
+  min-height: 100%;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+  margin: 0;
+}
+
+.day-head strong {
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1;
+}
+
+.day-head span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.day-status-summary {
+  align-self: end;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+}
+
+.day-cell .day-status-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 21px;
+  padding: 3px 5px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-cell .day-status-chip svg {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 auto;
+}
+
+.day-cell .day-status-chip.due {
+  border-color: var(--status-due);
+  background: var(--status-due-bg);
+  color: var(--status-due);
+}
+
+.day-cell .day-status-chip.not-done {
+  border-color: var(--status-due);
+  background: var(--status-due-bg);
+  color: var(--status-due);
+}
+
+.day-cell .day-status-chip.done {
+  border-color: var(--status-done);
+  background: var(--status-done-bg);
+  color: var(--status-done);
+}
+
+.day-cell .day-status-chip.missed {
+  border-color: var(--status-missed);
+  background: var(--status-missed-bg);
+  color: var(--status-missed);
+}
+
+.day-cell .day-status-chip.on {
+  border-color: var(--status-on);
+  background: var(--status-on-bg);
+  color: var(--status-on);
+}
+
+.day-cell .day-status-chip.off {
+  border-color: var(--status-off);
+  background: var(--status-off-bg);
+  color: var(--status-off);
+}
+
+.day-cell .day-status-chip.transition {
+  border-color: var(--status-transition);
+  background: var(--status-transition-bg);
+  color: var(--status-transition);
+}
+
+.selected-day-panel {
+  display: block;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.selected-day-panel .section-heading {
+  margin-bottom: 10px;
+}
+
+.selected-day-panel .section-heading h2 {
+  font-size: 1.08rem;
+}
+
+.selected-day-list {
+  display: grid;
+  gap: 8px;
+}
+
+.selected-day-panel .calendar-status-row {
+  gap: 8px;
+  padding: 10px;
+  border-left-width: 5px;
+}
+
+.selected-day-panel .calendar-status-row strong {
+  overflow: visible;
+  font-size: 0.94rem;
+  white-space: normal;
+}
+
+.selected-day-panel .status-label {
+  font-size: 0.66rem;
+}
+
+.selected-day-panel .calendar-override summary {
+  min-height: 32px;
+  font-size: 0.78rem;
+}
+
+.selected-day-panel .calendar-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.selected-day-panel .calendar-actions .mini {
+  min-height: 34px;
+  font-size: 0.72rem;
+}

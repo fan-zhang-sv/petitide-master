@@ -1,4 +1,6 @@
 import { Activity, Plus } from 'lucide-react';
+import { Button } from './Button';
+import { Card } from './Card';
 
 interface EmptyStateProps {
   title: string;
@@ -14,16 +16,16 @@ export function EmptyState({
   onAction,
 }: EmptyStateProps) {
   return (
-    <section className="empty-state">
+    <Card as="section" variant="empty">
       <Activity aria-hidden />
       <h2>{title}</h2>
       <p>{body}</p>
       {actionLabel && onAction && (
-        <button type="button" className="primary-button" onClick={onAction}>
+        <Button variant="primary" onClick={onAction}>
           <Plus aria-hidden />
           {actionLabel}
-        </button>
+        </Button>
       )}
-    </section>
+    </Card>
   );
 }

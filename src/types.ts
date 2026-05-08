@@ -113,7 +113,7 @@ export interface DayPlanStatus {
   scheduleConfidence?: 'high' | 'medium' | 'low'
   scheduleAnchorDate?: string
 }
-export type MainTab = 'today' | 'plans' | 'calendar' | 'tools' | 'dose-math' | 'settings'
+export type MainTab = 'today' | 'plans' | 'calendar' | 'settings'
 
 export interface TabConfig {
   id: MainTab

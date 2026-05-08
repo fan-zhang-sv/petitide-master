@@ -1,6 +1,10 @@
 import { Check, Pause, Power, SkipForward, X } from 'lucide-react';
 import type { DayPlanStatus, InjectionLog } from '../../types';
 import { todayIso } from '../../utils/dates';
+import { Button } from '../../components/ui/Button';
+import { StatusLabel } from '../../components/ui/Badge';
+import styles from '../../styles/app.module.css';
+import { cx } from '../../utils/ui/classNames';
 
 interface CalendarStatusRowProps {
   status: DayPlanStatus;
@@ -14,11 +18,11 @@ export function CalendarStatusRow({
   const statusKind = getCalendarStatusKind(status);
   const canOverridePast = status.date <= todayIso() && status.cycleState !== 'upcoming';
   const actions = (
-    <div className="calendar-actions">
+    <div className={styles['calendar-actions']}>
       {!status.completed && (
-        <button
-          type="button"
-          className="primary-button mini"
+        <Button
+          variant="primary"
+          size="mini"
           onClick={() =>
             void onLog({
               planId: status.plan.id,
@@ -31,12 +35,12 @@ export function CalendarStatusRow({
         >
           <Check aria-hidden />
           Done
-        </button>
+        </Button>
       )}
       {!status.skipped && (
-        <button
-          type="button"
-          className="ghost-button mini"
+        <Button
+          variant="ghost"
+          size="mini"
           onClick={() =>
             void onLog({
               planId: status.plan.id,
@@ -49,23 +53,23 @@ export function CalendarStatusRow({
         >
           <SkipForward aria-hidden />
           Not done
-        </button>
+        </Button>
       )}
     </div>
   );
 
   return (
-    <div className={`calendar-status-row ${statusKind}`}>
-      <div className="calendar-status-main">
-        <div className="calendar-status-badges">
-          <span className={`status-label ${cycleStatusKind(status)}`}>
+    <div className={cx(styles['calendar-status-row'], styles[statusKind])}>
+      <div className={styles['calendar-status-main']}>
+        <div className={styles['calendar-status-badges']}>
+          <StatusLabel tone={cycleStatusKind(status)}>
             {status.cycleState === 'active' ? <Power aria-hidden /> : <Pause aria-hidden />}
             {cycleStatusLabel(status)}
-          </span>
-          <span className={`status-label ${completionStatusKind(status)}`}>
+          </StatusLabel>
+          <StatusLabel tone={completionStatusKind(status)}>
             {status.completed ? <Check aria-hidden /> : <X aria-hidden />}
             {completionStatusLabel(status)}
-          </span>
+          </StatusLabel>
         </div>
         <strong>{status.plan.name}</strong>
       </div>

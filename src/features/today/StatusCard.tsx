@@ -1,6 +1,10 @@
 import { Check, Pause, Power, SkipForward, X } from 'lucide-react';
 import type { DayPlanStatus, InjectionLog } from '../../types';
 import { todayIso } from '../../utils/dates';
+import { Button } from '../../components/ui/Button';
+import { StatusLabel } from '../../components/ui/Badge';
+import styles from '../../styles/app.module.css';
+import { cx } from '../../utils/ui/classNames';
 
 interface StatusCardProps {
   status: DayPlanStatus;
@@ -24,35 +28,35 @@ export function StatusCard({
     });
 
   return (
-    <article className={`status-card ${getCardKind(status)}`}>
-      <div className="status-card-main">
-        <div className="today-status-badges">
-          <span className={`status-label ${status.cycleState === 'active' ? 'on' : 'off'}`}>
+    <article className={cx(styles['status-card'], styles[getCardKind(status)])}>
+      <div className={styles['status-card-main']}>
+        <div className={styles['today-status-badges']}>
+          <StatusLabel tone={status.cycleState === 'active' ? 'on' : 'off'}>
             {status.cycleState === 'active' ? <Power aria-hidden /> : <Pause aria-hidden />}
             {status.cycleState === 'active' ? 'On' : 'Off'}
-          </span>
-          <span className={`status-label ${status.completed ? 'done' : 'not-done'}`}>
+          </StatusLabel>
+          <StatusLabel tone={status.completed ? 'done' : 'not-done'}>
             {status.completed ? <Check aria-hidden /> : <X aria-hidden />}
             {status.completed ? 'Done' : 'Not done'}
-          </span>
+          </StatusLabel>
         </div>
         <h3>{status.plan.name}</h3>
         <p>{status.date !== todayIso() ? `${status.date} · ` : ''}{status.plan.dose || 'Dose not set'}</p>
       </div>
 
       {canLog && (
-        <div className="today-row-actions">
+        <div className={styles['today-row-actions']}>
           {!status.completed && (
-            <button type="button" className="primary-button small" onClick={() => void log('completed')}>
+            <Button variant="primary" size="small" onClick={() => void log('completed')}>
               <Check aria-hidden />
               Done
-            </button>
+            </Button>
           )}
           {!status.skipped && (
-            <button type="button" className="ghost-button small" onClick={() => void log('skipped')}>
+            <Button variant="ghost" size="small" onClick={() => void log('skipped')}>
               <SkipForward aria-hidden />
               Not done
-            </button>
+            </Button>
           )}
         </div>
       )}

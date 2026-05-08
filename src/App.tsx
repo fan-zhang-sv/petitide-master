@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Home, Syringe, CalendarDays, Settings, Calculator } from 'lucide-react';
-import './App.css';
+import { Home, Syringe, CalendarDays, Settings } from 'lucide-react';
+import styles from './styles/app.module.css';
+import { cx } from './utils/ui/classNames';
 import { usePlannerStore } from './db/usePlannerStore';
 import type { MainTab, TabConfig } from './types';
 import { todayIso, addIsoDays } from './utils/dates';
@@ -11,27 +12,25 @@ import { Sidebar } from './components/layout/Sidebar';
 import { MobileTabbar } from './components/layout/MobileTabbar';
 import { AppHeader } from './components/layout/AppHeader';
 import { Onboarding } from './components/layout/Onboarding';
+import { Footer } from './components/ui/Footer';
 
 // Feature Views
 import { Dashboard } from './features/today/Dashboard';
 import { PlansView } from './features/plans/PlansView';
 import { CalendarView } from './features/calendar/CalendarView';
-import { ToolsView } from './features/tools/ToolsView';
-import { DoseMathView } from './features/dose-math/DoseMathView';
 import { SettingsView } from './features/settings/SettingsView';
 
 const mobileTabs: TabConfig[] = [
   { id: 'today', label: 'Today', icon: Home },
   { id: 'plans', label: 'Plans', icon: Syringe },
   { id: 'calendar', label: 'Calendar', icon: CalendarDays },
-  { id: 'tools', label: 'Tools', icon: Settings },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 const desktopTabs: TabConfig[] = [
   { id: 'today', label: 'Today', icon: Home },
   { id: 'plans', label: 'Plans', icon: Syringe },
   { id: 'calendar', label: 'Calendar', icon: CalendarDays },
-  { id: 'dose-math', label: 'Dose Math', icon: Calculator },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -68,8 +67,8 @@ function App() {
 
   if (store.loading || !store.settings) {
     return (
-      <main className="app-shell centered">
-        <div className="loading-card">
+      <main className={cx(styles['app-shell'], styles.centered)}>
+        <div className={styles['loading-card']}>
           <Syringe aria-hidden />
           <span>Loading planner</span>
         </div>
@@ -82,14 +81,14 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className={styles['app-shell']}>
       <Sidebar
         activeTab={activeTab}
         tabs={desktopTabs}
         onTabChange={setActiveTab}
       />
 
-      <section className="app-content">
+      <section className={styles['app-content']}>
         <AppHeader />
         <MobileTabbar
           activeTab={activeTab}
@@ -123,21 +122,6 @@ function App() {
             onLog={store.addLog}
           />
         )}
-        {activeTab === 'tools' && (
-          <ToolsView
-            plans={store.activePlans}
-            onUpdatePlan={store.updatePlan}
-            settings={store.settings}
-            onSaveSettings={store.saveSettings}
-            onRefresh={store.refresh}
-          />
-        )}
-        {activeTab === 'dose-math' && (
-          <DoseMathView
-            plans={store.activePlans}
-            onUpdatePlan={store.updatePlan}
-          />
-        )}
         {activeTab === 'settings' && (
           <SettingsView
             settings={store.settings}
@@ -145,6 +129,7 @@ function App() {
             onRefresh={store.refresh}
           />
         )}
+        <Footer meta="Local-first planner. Data stays on this device." />
       </section>
     </main>
   );

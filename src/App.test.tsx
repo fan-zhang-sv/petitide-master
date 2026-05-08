@@ -32,4 +32,13 @@ describe('App', () => {
     expect(await screen.findByText(/no active plan/i)).toBeInTheDocument()
     expect(screen.queryByText('Cycle review')).not.toBeInTheDocument()
   })
+
+  it('does not expose Dose Math as top-level navigation', async () => {
+    render(<App />)
+
+    await userEvent.click(await screen.findByRole('button', { name: /i understand/i }))
+
+    expect(await screen.findByRole('button', { name: /open catalog/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /dose math/i })).not.toBeInTheDocument()
+  })
 })

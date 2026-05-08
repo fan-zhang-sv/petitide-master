@@ -1,0 +1,392 @@
+.calendar-status-row.due,
+.calendar-status-row.planned,
+.calendar-status-row.not-done {
+  border-left-color: var(--status-due);
+  background: var(--status-due-bg);
+}
+
+.calendar-status-row.due .status-label,
+.calendar-status-row.planned .status-label,
+.status-label.not-done {
+  background: var(--status-due);
+  color: #fff;
+}
+
+.calendar-status-row.done {
+  border-left-color: var(--status-done);
+  background: var(--status-done-bg);
+}
+
+.calendar-status-row.done .status-label {
+  background: var(--status-done);
+  color: #fff;
+}
+
+.calendar-status-row.missed,
+.calendar-status-row.skipped {
+  border-left-color: var(--status-missed);
+  background: var(--status-missed-bg);
+}
+
+.calendar-status-row.missed .status-label,
+.calendar-status-row.skipped .status-label {
+  background: var(--status-missed);
+  color: #fff;
+}
+
+.calendar-status-row.on {
+  border-left-color: var(--status-on);
+  background: var(--status-on-bg);
+}
+
+.calendar-status-row.on .status-label,
+.status-label.on {
+  background: var(--status-on);
+  color: #fff;
+}
+
+.calendar-status-row.off,
+.calendar-status-row.upcoming {
+  border-left-color: var(--status-off);
+  background: var(--status-off-bg);
+}
+
+.calendar-status-row.off .status-label,
+.calendar-status-row.upcoming .status-label,
+.status-label.off {
+  background: var(--status-off);
+  color: #fff;
+}
+
+.transition-day .calendar-status-row {
+  box-shadow: inset 0 0 0 1px var(--status-transition);
+}
+
+.calendar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.settings-layout > header,
+.settings-layout .section-band:first-child {
+  grid-column: 1 / -1;
+}
+
+.settings-panel {
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0)),
+    var(--panel);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.74),
+    0 8px 24px rgba(35, 49, 45, 0.045);
+}
+
+.settings-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 720;
+  line-height: 1.45;
+}
+
+.settings-heading-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--muted);
+}
+
+.file-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.empty-state {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 40px 28px;
+  margin: 20px 0;
+}
+
+.empty-state svg {
+  width: 28px;
+  height: 28px;
+  color: var(--steel);
+}
+
+@media (max-width: 1100px) {
+  .calendar-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    padding: 12px;
+    padding-bottom: 48px;
+  }
+
+  .tabbar {
+  }
+
+  .toolbar,
+  .guide-strip,
+  .calc-layout,
+  .calendar-controls,
+  .transition-strip,
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .calendar-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 14px 16px 96px;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 25;
+    align-items: center;
+    padding: 10px 2px 12px;
+    background: rgba(247, 243, 234, 0.96);
+    backdrop-filter: blur(16px);
+  }
+
+  .topbar h1 {
+    font-size: 1.28rem;
+  }
+
+  .topbar .eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+  }
+
+  .icon-button {
+    width: 42px;
+    min-height: 42px;
+  }
+
+  .metric-grid,
+  .form-grid,
+  .today-hero,
+  .calendar-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .screen {
+    padding-top: 14px;
+  }
+
+  .today-hero,
+  .calendar-controls,
+  .transition-strip,
+  .guide-strip {
+    padding: 16px;
+  }
+
+  .section-band,
+  .tool-panel,
+  .result-panel {
+    padding: 14px;
+    margin-top: 12px;
+  }
+
+  .guide-strip {
+    gap: 10px;
+  }
+
+  .guide-strip div {
+    padding: 12px;
+  }
+
+  .toolbar {
+    margin-top: 6px;
+  }
+
+  .source-note {
+    padding: 0 2px;
+    margin-bottom: 16px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .today-hero h2 {
+    font-size: 1.28rem;
+  }
+
+  .today-score {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 0;
+    min-height: 68px;
+    padding: 0 16px;
+  }
+
+  .today-score strong {
+    font-size: 1.8rem;
+  }
+
+  .today-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .today-metrics .metric {
+    min-height: 68px;
+    padding: 10px;
+  }
+
+  .today-metrics .metric span {
+    font-size: 0.76rem;
+    line-height: 1.15;
+  }
+
+  .today-metrics .metric strong {
+    font-size: 1.35rem;
+  }
+
+  .status-card,
+  .plan-card,
+  .catalog-card {
+    padding: 14px;
+  }
+
+  .calendar-controls {
+    gap: 12px;
+  }
+
+  .transition-strip {
+    gap: 10px;
+  }
+
+  .calendar-legend {
+    gap: 6px;
+  }
+
+  .legend-item {
+    flex: 1 1 calc(50% - 6px);
+    justify-content: center;
+  }
+
+  .day-cell {
+    min-height: 0;
+    padding: 14px;
+  }
+
+  .day-head span {
+    font-size: 0.72rem;
+  }
+
+  .calendar-status-row {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .calendar-status-row strong {
+    font-size: 0.92rem;
+  }
+
+  .calendar-actions .mini {
+    flex: 1 1 0;
+    min-height: 36px;
+  }
+
+  .button-row {
+    margin-top: 4px;
+  }
+
+  .button-row > button,
+  .result-panel > button,
+  .catalog-card > button,
+  .dialog > button[type="submit"] {
+    width: 100%;
+  }
+
+  .dialog-backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .dialog {
+    width: 100%;
+    max-height: 88svh;
+    padding: 18px 16px 24px;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .dialog .section-heading {
+    margin-bottom: 12px;
+  }
+
+  .onboarding-panel {
+    padding: 22px 18px;
+  }
+
+  .onboarding-panel h1 {
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+
+  .empty-state {
+    padding: 24px 18px;
+  }
+
+  .settings-layout {
+    gap: 0;
+  }
+
+  .settings-layout .section-band {
+    margin-top: 12px;
+  }
+
+  .section-heading {
+    margin-bottom: 12px;
+  }
+
+  .detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 10px 0;
+  }
+
+  .cycle-review-card {
+    padding: 14px;
+  }
+
+  .notice {
+    margin: 14px 0;
+    padding: 12px;
+  }
+
+  .calc-summary {
+    margin-bottom: 12px;
+  }
+}

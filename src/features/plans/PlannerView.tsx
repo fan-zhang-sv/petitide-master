@@ -19,7 +19,11 @@ import { getDayPlanStatus, frequencyLabel, cycleLabel } from '../../utils/cycleE
 import { analyzeCycleReview } from '../../utils/cycleReview';
 import { formatNumber } from '../../utils/reconstitution';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { Screen } from '../../components/ui/Screen';
+import { StatusLabel } from '../../components/ui/Badge';
 import { PlanEditDialog } from './PlanEditDialog';
+import styles from '../../styles/app.module.css';
+import { cx } from '../../utils/ui/classNames';
 
 interface PlannerViewProps {
   plans: PlannedPeptide[];
@@ -38,17 +42,17 @@ export function PlannerView({
 
   if (plans.length === 0) {
     return (
-      <section className="screen">
+      <Screen>
         <EmptyState
           title="Plan is empty"
-          body="Use the Add plan button to pick a protocol from the catalog."
+          body="Use Browse catalog to pick a protocol."
         />
-      </section>
+      </Screen>
     );
   }
 
   return (
-    <section className="screen plans-board" aria-label="Active plans">
+    <Screen className={styles['plans-board']} aria-label="Active plans">
       {plans.map((plan, index) => {
         const status = getDayPlanStatus(plan, logs, todayIso());
         const review = analyzeCycleReview(plan, logs);
@@ -67,30 +71,26 @@ export function PlannerView({
         return (
           <article
             key={plan.id}
-            className={`plan-row ${status.cycleState} ${status.due && !status.completed ? 'due' : ''}`}
+            className={cx(styles['plan-row'], styles[status.cycleState], status.due && !status.completed && styles.due)}
             style={{ animationDelay: `${index * 35}ms` }}
             aria-label={`${plan.name}, ${cycleLabelText}, ${todayLabel} today`}
           >
-            <div className="plan-state-rail" title={cycleLabelText}>
+            <div className={styles['plan-state-rail']} title={cycleLabelText}>
               <CycleIcon aria-hidden />
             </div>
 
-            <div className="plan-row-main">
-              <div className="plan-name-line">
+            <div className={styles['plan-row-main']}>
+              <div className={styles['plan-name-line']}>
                 <h3>{plan.name}</h3>
-                <div className="plan-status-pair" aria-label={`${todayLabel} today`}>
-                  <span
-                    className={`status-label ${
-                      status.completed ? 'done' : status.skipped || status.due ? 'not-done' : 'neutral'
-                    }`}
-                  >
+                <div className={styles['plan-status-pair']} aria-label={`${todayLabel} today`}>
+                  <StatusLabel tone={status.completed ? 'done' : status.skipped || status.due ? 'not-done' : 'neutral'}>
                     <TodayIcon aria-hidden />
                     {todayLabel}
-                  </span>
+                  </StatusLabel>
                 </div>
               </div>
 
-              <div className="plan-fact-strip">
+              <div className={styles['plan-fact-strip']}>
                 <span>
                   <strong>Dose</strong>
                   {plan.dose}
@@ -109,46 +109,46 @@ export function PlannerView({
                 </span>
               </div>
 
-              <div className={`plan-review-line ${review.level}`}>
+              <div className={cx(styles['plan-review-line'], styles[review.level])}>
                 <ReviewIcon aria-hidden />
                 <span>{review.headline}</span>
                 {review.baseline && <strong>{review.baseline.date}</strong>}
               </div>
 
-              <div className="plan-secondary-line">
+              <div className={styles['plan-secondary-line']}>
                 <span>{plan.route}</span>
                 <span>Started {plan.startDate}</span>
                 <span>{plan.reminderTime || 'No reminder'}</span>
                 {plan.calculator && (
-                  <span className="plan-calc-inline">
+                  <span className={styles['plan-calc-inline']}>
                     <FlaskConical aria-hidden />
                     {formatNumber(plan.calculator.syringeUnits)} units / {formatNumber(plan.calculator.drawMl, 3)} mL
                   </span>
                 )}
               </div>
-              {plan.notes && <p className="plan-note-line">{plan.notes}</p>}
+              {plan.notes && <p className={styles['plan-note-line']}>{plan.notes}</p>}
             </div>
 
-            <div className="plan-row-actions">
+            <div className={styles['plan-row-actions']}>
               <button
                 type="button"
-                className="icon-action primary"
+                className={cx(styles['icon-action'], styles.primary)}
                 onClick={() => setEditingPlan(plan)}
                 aria-label={`Edit ${plan.name}`}
                 title="Edit"
               >
                 <Pencil aria-hidden />
-                <span className="plan-action-label">Edit</span>
+                <span className={styles['plan-action-label']}>Edit</span>
               </button>
               <button
                 type="button"
-                className="icon-action"
+                className={styles['icon-action']}
                 onClick={() => void onArchive(plan.id)}
                 aria-label={`Archive ${plan.name}`}
                 title="Archive"
               >
                 <Archive aria-hidden />
-                <span className="plan-action-label">Archive</span>
+                <span className={styles['plan-action-label']}>Archive</span>
               </button>
             </div>
           </article>
@@ -164,6 +164,6 @@ export function PlannerView({
           }}
         />
       )}
-    </section>
+    </Screen>
   );
 }
