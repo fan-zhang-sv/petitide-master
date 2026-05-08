@@ -9,6 +9,7 @@ import {
   memoryLocalCache,
   type Firestore,
 } from 'firebase/firestore'
+import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
 
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,6 +18,7 @@ const config = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 }
 
 export const firebaseEnabled = Boolean(config.apiKey && config.projectId && config.appId)
@@ -25,6 +27,7 @@ let app: FirebaseApp | null = null
 let _auth: Auth | null = null
 let _firestore: Firestore | null = null
 let _googleProvider: GoogleAuthProvider | null = null
+let _analytics: Promise<Analytics | null> = Promise.resolve(null)
 
 if (firebaseEnabled) {
   app = initializeApp(config)
@@ -33,9 +36,15 @@ if (firebaseEnabled) {
   _firestore = initializeFirestore(app, { localCache: memoryLocalCache() })
   _googleProvider = new GoogleAuthProvider()
   _googleProvider.setCustomParameters({ prompt: 'select_account' })
+  if (config.measurementId) {
+    _analytics = isSupported()
+      .then((supported) => (supported && app ? getAnalytics(app) : null))
+      .catch(() => null)
+  }
 }
 
 export const firebaseApp = app
 export const auth = _auth
 export const firestore = _firestore
 export const googleProvider = _googleProvider
+export const firebaseAnalytics = _analytics
