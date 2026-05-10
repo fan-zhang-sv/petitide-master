@@ -10,9 +10,9 @@ import styles from '../../styles/app.module.css';
 // Venmo / Cash App: omit the leading @ or $.
 // Base: paste your 0x… wallet address. baseName is an optional Basename label.
 const SUPPORT = {
-  venmo: 'felixzhang',
-  cashapp: 'felixzhang',
-  baseAddress: '',
+  venmo: 'felix_zhang',
+  cashapp: 'felixzhang997',
+  baseAddress: '0x9A9b8F6bd58B03fE2098FC4C40CA4F8020649267',
   baseName: 'felixzh.base.eth',
 } as const;
 
