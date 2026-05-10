@@ -1,0 +1,91 @@
+.support-badge-venmo,
+.support-badge-cashapp,
+.support-badge-base {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  /* Subtle inset highlight + soft outer lift — gives the chips a refined,
+     "tile" feel instead of looking like flat brand swatches. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(35, 49, 45, 0.12);
+}
+
+.support-badge-venmo {
+  background: linear-gradient(180deg, #1F9CFF 0%, #0079E0 100%);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.support-badge-cashapp {
+  background: linear-gradient(180deg, #1FE04F 0%, #00B82C 100%);
+  font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+}
+
+.support-badge-base {
+  background: #0052FF;
+  padding: 0;
+}
+
+.support-badge-base svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.support-base-description {
+  display: grid;
+  gap: 2px;
+}
+
+.support-base-label {
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  font-size: 0.86rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.support-base-hint {
+  color: var(--muted);
+  font-size: 0.78rem;
+  transition: color var(--duration-fast) var(--ease-clinical);
+}
+
+.support-base-hint.copied {
+  color: var(--status-done);
+}
+
+.support-base-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin: 0 16px 14px 72px; /* aligns under the row's text column */
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: left;
+  transition: color var(--duration-fast) var(--ease-clinical);
+}
+
+.support-base-link:hover,
+.support-base-link:focus-visible {
+  color: var(--ink);
+}
+
+.support-base-link svg {
+  width: 13px;
+  height: 13px;
+}

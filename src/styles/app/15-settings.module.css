@@ -1,0 +1,283 @@
+/* Span both columns on the desktop two-column settings grid. */
+.settings-card-full {
+  grid-column: 1 / -1;
+}
+
+/* ────────────────────────────────────────────────────────────
+   Layout — give Data the wider column on desktop and breathe a
+   little more between cards.
+   ──────────────────────────────────────────────────────────── */
+@media (min-width: 900px) {
+  .settings-layout-tuned {
+    grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.15fr);
+    gap: 16px;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────
+   Account hero
+   ──────────────────────────────────────────────────────────── */
+.account-card {
+  padding: 18px;
+  gap: 14px;
+}
+
+.account-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Signed-in variant uses grid-template-areas so the status pill
+   collapses below on mobile but sits inline at desktop sizes. */
+.account-card-active {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "avatar identity actions"
+    "status status status";
+  column-gap: 14px;
+  row-gap: 12px;
+}
+
+@media (min-width: 900px) {
+  .account-card-active {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "avatar identity status actions";
+    column-gap: 18px;
+    row-gap: 0;
+  }
+}
+
+.account-card-active .account-avatar {
+  grid-area: avatar;
+}
+
+.account-card-active .account-meta {
+  grid-area: identity;
+}
+
+.account-card-active .account-status {
+  grid-area: status;
+}
+
+.account-card-active .account-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  justify-self: end;
+}
+
+.account-avatar {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--field);
+  color: var(--ink);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.account-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-avatar svg {
+  width: 22px;
+  height: 22px;
+  color: var(--muted);
+}
+
+.account-avatar-empty {
+  background: var(--paper);
+}
+
+.account-avatar-local {
+  background: var(--paper);
+  border: 1px dashed var(--line);
+  box-shadow: none;
+}
+
+.account-meta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.account-meta strong {
+  font-size: 1.05rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-meta span {
+  color: var(--muted);
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-cta {
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .account-cta {
+    width: auto;
+    min-width: 260px;
+    justify-self: start;
+  }
+}
+
+.account-status {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background var(--duration-fast) var(--ease-clinical),
+              color var(--duration-fast) var(--ease-clinical);
+}
+
+.account-status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.account-status-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.account-status-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-status-done .account-status-icon svg {
+  color: var(--status-done);
+}
+
+.account-status-progress .account-status-icon svg {
+  color: var(--steel);
+}
+
+.account-status-error {
+  background: var(--status-missed-bg);
+  color: var(--status-missed);
+}
+
+.account-status-error .account-status-icon svg {
+  color: var(--status-missed);
+}
+
+.account-status-spin svg {
+  animation: spin 1.4s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.account-status-retry {
+  margin-left: 4px;
+  padding: 3px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-clinical);
+}
+
+.account-status-retry:hover,
+.account-status-retry:focus-visible {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ────────────────────────────────────────────────────────────
+   Preferences — horizontal "settings row" pattern (label left,
+   control right). Reads as intentional even with one entry.
+   ──────────────────────────────────────────────────────────── */
+.settings-rows {
+  display: grid;
+  gap: 0;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 2px;
+  border-top: 1px solid var(--line);
+}
+
+.settings-row:first-child {
+  border-top: 0;
+  padding-top: 4px;
+}
+
+.settings-row-label {
+  font-weight: 650;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.settings-row select {
+  width: auto;
+  min-width: 132px;
+  min-height: 40px;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  font-weight: 650;
+}
+
+/* ────────────────────────────────────────────────────────────
+   Closing disclaimer — calm centered pill, not another card.
+   ──────────────────────────────────────────────────────────── */
+.settings-disclaimer-pill {
+  grid-column: 1 / -1;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px auto 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #fff0dd;
+  color: #6e3c09;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+}
+
+.settings-disclaimer-pill svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}

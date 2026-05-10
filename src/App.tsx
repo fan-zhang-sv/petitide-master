@@ -13,6 +13,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { MobileTabbar } from './components/layout/MobileTabbar';
 import { AppHeader } from './components/layout/AppHeader';
 import { Onboarding } from './components/layout/Onboarding';
+import { InstallPrompt } from './components/layout/InstallPrompt';
 import { Footer } from './components/ui/Footer';
 
 // Feature Views
@@ -132,6 +133,7 @@ function AppShell() {
         )}
         <Footer meta="Local-first planner. Data stays on this device." />
       </section>
+      <InstallPrompt />
     </main>
   );
 }
