@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { AppSettings, InjectionLog, PlannedPeptide } from '../types'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from '../auth/AuthContext'
 import { firestore } from '../lib/firebase'
 import { LocalRepository } from '../sync/localRepository'
 import { RemoteRepository } from '../sync/remoteRepository'
@@ -10,7 +10,7 @@ export function usePlannerStore() {
   const { user, authLoading, migration } = useAuth()
   const [snapshot, setSnapshot] = useState<PlannerSnapshot | null>(null)
   const [loading, setLoading] = useState(true)
-  const repositoryRef = useRef<PlannerRepository | null>(null)
+  const [repository, setRepository] = useState<PlannerRepository | null>(null)
 
   // Wait for migration to complete before swapping to the remote repo so that
   // local Dexie data remains the source of truth during the migration window.
@@ -18,46 +18,45 @@ export function usePlannerStore() {
     !user || migration.phase === 'done' || migration.phase === 'error' || !firestore
   )
 
-  const repository = useMemo<PlannerRepository | null>(() => {
+  // Manage repository lifecycle.
+  // We use an effect to avoid accessing refs or creating side-effectful classes during render.
+  useEffect(() => {
     if (!ready) {
-      return repositoryRef.current
+      return
     }
-    if (user && firestore && migration.phase === 'done') {
-      return new RemoteRepository(firestore, user.uid)
-    }
-    return new LocalRepository()
-    // We intentionally re-create on user/migration changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, migration.phase, ready])
 
+    const nextRepository = (user && firestore && migration.phase === 'done')
+      ? new RemoteRepository(firestore, user.uid)
+      : new LocalRepository()
+    
+    queueMicrotask(() => setRepository(nextRepository))
+
+    return () => {
+      if (nextRepository instanceof RemoteRepository) {
+        nextRepository.dispose()
+      }
+    }
+  }, [user, migration.phase, ready])
+
+  // Manage subscription lifecycle.
   useEffect(() => {
     if (!repository) {
       return
     }
-    const previous = repositoryRef.current
-    if (previous && previous !== repository && previous instanceof RemoteRepository) {
-      previous.dispose()
-    }
-    repositoryRef.current = repository
 
-    setLoading(true)
+    // Since we are starting a new subscription, we are technically loading.
+    // We defer this to the next tick if needed, but here we can just let the subscribe callback handle it.
     const unsubscribe = repository.subscribe((next) => {
       setSnapshot(next)
       setLoading(false)
     })
+
     return () => {
       unsubscribe()
+      // Reset loading for the next repository swap
+      setLoading(true)
     }
   }, [repository])
-
-  useEffect(() => {
-    return () => {
-      const current = repositoryRef.current
-      if (current instanceof RemoteRepository) {
-        current.dispose()
-      }
-    }
-  }, [])
 
   const refresh = useCallback(async () => {
     if (!repository) return
@@ -113,9 +112,11 @@ export function usePlannerStore() {
     [repository],
   )
 
-  const plans = snapshot?.plans ?? []
-  const logs = snapshot?.logs ?? []
+  // Use stable references for snapshot data to avoid excessive re-renders of downstream effects.
+  const plans = useMemo(() => snapshot?.plans ?? [], [snapshot?.plans])
+  const logs = useMemo(() => snapshot?.logs ?? [], [snapshot?.logs])
   const settings = snapshot?.settings ?? null
+  
   const activePlans = useMemo(() => plans.filter((plan) => !plan.archived), [plans])
 
   return {

@@ -1,0 +1,97 @@
+:root {
+  /* Typography Scale — Denstity-first */
+  --text-xs: 0.72rem;
+  --text-sm: 0.84rem;
+  --text-base: 0.86rem;
+  --text-md: 0.92rem;
+  --text-lg: 0.98rem;
+  --text-xl: 1.05rem;
+  --text-h2: 1.08rem;
+  
+  --weight-normal: 500;
+  --weight-bold: 700;
+  --weight-heavy: 800;
+  --weight-black: 900;
+  
+  --line-height-tight: 1.1;
+  --line-height-base: 1.45;
+
+  /* Spacing Scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-base: 12px;
+  --space-md: 16px;
+  --space-lg: 20px;
+  
+  /* Layout Primitives */
+  --grid-gap: var(--space-base);
+  --panel-padding: var(--space-base);
+  --row-padding: 10px var(--space-base);
+}
+
+/* System Components */
+.sys-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--panel-padding);
+}
+
+.sys-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-base);
+  padding: var(--row-padding);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: border-color var(--duration-fast) var(--ease-clinical);
+}
+
+.sys-row-hover:hover {
+  border-color: var(--steel);
+}
+
+.sys-heading {
+  font-size: var(--text-h2);
+  line-height: var(--line-height-tight);
+  font-weight: var(--weight-heavy);
+  color: var(--ink);
+}
+
+.sys-subtext {
+  font-size: var(--text-base);
+  font-weight: var(--weight-heavy);
+  color: var(--muted);
+}
+
+.sys-label {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heavy);
+  color: var(--ink);
+}
+
+.sys-hint {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-heavy);
+  color: var(--muted);
+}
+
+.sys-icon-box {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.sys-icon-box svg {
+  width: 16px;
+  height: 16px;
+}

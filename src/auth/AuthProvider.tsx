@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -19,42 +17,21 @@ import {
 import { auth, firebaseEnabled, firestore, googleProvider } from '../lib/firebase'
 import {
   migrateLocalToCloud,
-  type MigrationPhase,
-  type MigrationResult,
 } from '../sync/migration'
 import { db } from '../db/database'
-
-export type { MigrationPhase } from '../sync/migration'
-
-export interface MigrationStatus {
-  phase: MigrationPhase
-  error?: string
-  result?: MigrationResult
-}
-
-interface AuthContextValue {
-  user: User | null
-  authLoading: boolean
-  firebaseEnabled: boolean
-  migration: MigrationStatus
-  signInWithGoogle: () => Promise<void>
-  signOut: () => Promise<void>
-  retryMigration: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextValue | null>(null)
+import { AuthContext, type AuthContextValue, type MigrationStatus } from './AuthContext'
 
 const initialMigration: MigrationStatus = { phase: 'idle' }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [authLoading, setAuthLoading] = useState(firebaseEnabled)
+  // Derive initial loading state from environment constants to avoid effect-based setState
+  const [authLoading, setAuthLoading] = useState(firebaseEnabled && !!auth)
   const [migration, setMigration] = useState<MigrationStatus>(initialMigration)
   const migrationRanFor = useRef<string | null>(null)
 
   useEffect(() => {
     if (!firebaseEnabled || !auth) {
-      setAuthLoading(false)
       return
     }
     const unsubscribe = onAuthStateChanged(auth, (next) => {
@@ -87,7 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) {
-      setMigration(initialMigration)
+      // Defer resetting to initialMigration to avoid synchronous setState inside effect warning.
+      // Alternatively, we could derive this state, but migration has its own lifecycle.
+      if (migration.phase !== 'idle') {
+        queueMicrotask(() => setMigration(initialMigration))
+      }
       migrationRanFor.current = null
       return
     }
@@ -96,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     migrationRanFor.current = user.uid
     void runMigration(user.uid)
-  }, [user, runMigration])
+  }, [user, runMigration, migration.phase])
 
   const signInWithGoogle = useCallback(async () => {
     if (!firebaseEnabled || !auth || !googleProvider) {
@@ -139,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authLoading,
       firebaseEnabled,
       migration,
-      signInWithGoogle,
+      signInWithGoogle: signInWithGoogle,
       signOut: signOutAccount,
       retryMigration,
     }),
@@ -147,12 +128,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext)
-  if (!ctx) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
-  return ctx
 }

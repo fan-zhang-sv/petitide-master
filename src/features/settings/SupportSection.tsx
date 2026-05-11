@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import { Check, Coffee, Copy, ExternalLink } from 'lucide-react';
-import { Card } from '../../components/ui/Card';
-import { MenuRow } from '../../components/ui/MenuRow';
-import { SectionHeader } from '../../components/ui/Header';
 import { cx } from '../../utils/ui/classNames';
 import styles from '../../styles/app.module.css';
 
@@ -24,10 +21,6 @@ function cashappUrl(handle: string) {
   return `https://cash.app/$${encodeURIComponent(handle)}`;
 }
 
-function baseProfileUrl(name: string) {
-  return `https://www.base.org/name/${encodeURIComponent(name)}`;
-}
-
 function shortenAddress(address: string) {
   if (address.length <= 12) return address;
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
@@ -39,31 +32,30 @@ function openExternal(url: string) {
 
 function VenmoBadge() {
   return (
-    <span className={styles['support-badge-venmo']} aria-hidden>
+    <div className={cx(styles['support-badge'], styles['venmo'])} aria-hidden>
       <span>V</span>
-    </span>
+    </div>
   );
 }
 
 function CashAppBadge() {
   return (
-    <span className={styles['support-badge-cashapp']} aria-hidden>
+    <div className={cx(styles['support-badge'], styles['cashapp'])} aria-hidden>
       <span>$</span>
-    </span>
+    </div>
   );
 }
 
 function BaseBadge() {
   return (
-    <span className={styles['support-badge-base']} aria-hidden>
+    <div className={cx(styles['support-badge'], styles['base'])} aria-hidden>
       <svg viewBox="0 0 32 32" focusable="false">
-        <circle cx="16" cy="16" r="16" fill="#0052FF" />
         <path
           d="M15.5 25.6c5.3 0 9.6-4.3 9.6-9.6 0-5.3-4.3-9.6-9.6-9.6-5 0-9.2 3.9-9.6 8.8h12.7v1.6H5.9c.4 4.9 4.5 8.8 9.6 8.8z"
           fill="#fff"
         />
       </svg>
-    </span>
+    </div>
   );
 }
 
@@ -98,80 +90,63 @@ export function SupportSection() {
   const baseCopied = copiedKey === 'base';
 
   return (
-    <Card
-      variant="panel"
-      className={cx(styles['settings-panel'], styles['settings-card-full'])}
-    >
-      <SectionHeader
-        title="Buy me a coffee"
-        actions={<Coffee aria-hidden className={styles['settings-heading-icon']} />}
-      />
-
-      <Card variant="info">
-        <Coffee aria-hidden className={styles['info-icon']} />
+    <>
+      <div className={styles['bento-header-group']}>
         <div>
-          <strong>If Petitide saves you time</strong>
-          <p>A small tip keeps development moving. Pick whichever&apos;s easiest.</p>
+          <h2>Buy me a coffee</h2>
+          <span>Support the developer</span>
         </div>
-      </Card>
+        <Coffee className={styles['bento-icon']} aria-hidden />
+      </div>
 
-      <div className={styles.stack}>
+      <div className={styles['support-note']}>
+        <Coffee aria-hidden />
+        <div className={styles['support-note-text']}>
+          <strong>If Petitide saves you time</strong>
+          <p>A small tip keeps development moving. Pick whichever's easiest.</p>
+        </div>
+      </div>
+
+      <div className={styles['support-items']}>
         {hasVenmo && (
-          <MenuRow
-            icon={<VenmoBadge />}
-            title="Venmo"
-            description={`@${SUPPORT.venmo}`}
-            trailing={<ExternalLink aria-hidden className={styles['menu-chevron']} />}
-            onClick={() => openExternal(venmoUrl(SUPPORT.venmo))}
-          />
+          <button type="button" className={styles['support-btn']} onClick={() => openExternal(venmoUrl(SUPPORT.venmo))}>
+            <VenmoBadge />
+            <div className={styles['support-details']}>
+              <strong>Venmo</strong>
+              <span>@{SUPPORT.venmo}</span>
+            </div>
+            <ExternalLink aria-hidden className={styles['support-btn-icon']} />
+          </button>
         )}
         {hasCashapp && (
-          <MenuRow
-            icon={<CashAppBadge />}
-            title="Cash App"
-            description={`$${SUPPORT.cashapp}`}
-            trailing={<ExternalLink aria-hidden className={styles['menu-chevron']} />}
-            onClick={() => openExternal(cashappUrl(SUPPORT.cashapp))}
-          />
+          <button type="button" className={styles['support-btn']} onClick={() => openExternal(cashappUrl(SUPPORT.cashapp))}>
+            <CashAppBadge />
+            <div className={styles['support-details']}>
+              <strong>Cash App</strong>
+              <span>${SUPPORT.cashapp}</span>
+            </div>
+            <ExternalLink aria-hidden className={styles['support-btn-icon']} />
+          </button>
         )}
         {hasBase && (
-          <MenuRow
-            icon={<BaseBadge />}
-            title="Base"
-            description={
-              <span className={styles['support-base-description']}>
-                <span className={styles['support-base-label']}>{baseLabel}</span>
-                <span
-                  className={cx(
-                    styles['support-base-hint'],
-                    baseCopied ? styles.copied : undefined,
-                  )}
-                >
-                  {baseCopied ? 'Copied — paste in Base App' : 'Tap to copy'}
-                </span>
-              </span>
-            }
-            trailing={
-              baseCopied ? (
-                <Check aria-hidden className={styles['menu-chevron']} />
-              ) : (
-                <Copy aria-hidden className={styles['menu-chevron']} />
-              )
-            }
-            onClick={() => void copy('base', baseCopyValue)}
-          />
-        )}
-        {hasBase && SUPPORT.baseName && (
           <button
             type="button"
-            className={styles['support-base-link']}
-            onClick={() => openExternal(baseProfileUrl(SUPPORT.baseName))}
+            className={cx(styles['support-btn'], baseCopied ? styles['copied'] : undefined)}
+            onClick={() => void copy('base', baseCopyValue)}
           >
-            View profile on base.org
-            <ExternalLink aria-hidden />
+            <BaseBadge />
+            <div className={styles['support-details']}>
+              <strong>Base</strong>
+              <span>{baseLabel}</span>
+            </div>
+            {baseCopied ? (
+              <Check aria-hidden className={styles['support-btn-icon']} />
+            ) : (
+              <Copy aria-hidden className={styles['support-btn-icon']} />
+            )}
           </button>
         )}
       </div>
-    </Card>
+    </>
   );
 }

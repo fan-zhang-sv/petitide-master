@@ -1,11 +1,16 @@
 import { type ChangeEvent } from 'react';
-import { AlertTriangle, Database, Download, RotateCcw, Upload } from 'lucide-react';
+import {
+  AlertTriangle,
+  Cloud,
+  Database,
+  Download,
+  Ruler,
+  RotateCcw,
+  Upload,
+} from 'lucide-react';
 import type { AppSettings } from '../../types';
 import { exportPlannerData, importPlannerData, clearPlannerData } from '../../db/database';
-import { Card } from '../../components/ui/Card';
-import { MenuRow } from '../../components/ui/MenuRow';
 import { Screen } from '../../components/ui/Screen';
-import { PageHeader, SectionHeader } from '../../components/ui/Header';
 import { cx } from '../../utils/ui/classNames';
 import styles from '../../styles/app.module.css';
 import { AccountCard } from './AccountCard';
@@ -47,17 +52,30 @@ export function SettingsView({
   };
 
   return (
-    <Screen className={cx(styles['settings-layout'], styles['settings-layout-tuned'])}>
-      <PageHeader variant="plain" title="Settings" />
+    <Screen className={styles['settings-workspace']}>
+      <div className={styles['settings-bento']}>
+        {/* Account Panel */}
+        <div className={cx(styles['bento-panel'], styles['bento-account'])}>
+          <AccountCard />
+        </div>
 
-      <AccountCard />
-
-      <Card variant="panel" className={styles['settings-panel']}>
-        <SectionHeader title="Preferences" meta="Display & calculations" />
-        <div className={styles['settings-rows']}>
-          <div className={styles['settings-row']}>
-            <span className={styles['settings-row-label']}>Dose unit</span>
+        {/* Preferences Panel */}
+        <div className={cx(styles['bento-panel'], styles['bento-pref'])}>
+          <div className={styles['bento-header-group']}>
+            <div>
+              <h2>Preferences</h2>
+              <span>Defaults for new entries</span>
+            </div>
+            <Ruler className={styles['bento-icon']} aria-hidden />
+          </div>
+          <label className={styles['pref-row']}>
+            <div className={styles['pref-info']}>
+              <strong>Dose unit</strong>
+              <span>Preferred display</span>
+            </div>
             <select
+              className={styles['pref-select']}
+              aria-label="Preferred dose unit"
               value={settings.preferredDoseUnit}
               onChange={(event) =>
                 onSaveSettings({ preferredDoseUnit: event.target.value as 'mg' | 'mcg' | 'IU' })
@@ -67,46 +85,69 @@ export function SettingsView({
               <option value="mg">mg</option>
               <option value="IU">IU</option>
             </select>
+          </label>
+        </div>
+
+        {/* Device Panel */}
+        <div className={cx(styles['bento-panel'], styles['bento-device'])}>
+          <div className={styles['bento-header-group']}>
+            <div>
+              <h2>Device</h2>
+              <span>PWA storage</span>
+            </div>
+            <Cloud className={styles['bento-icon']} aria-hidden />
+          </div>
+          <div className={styles['device-card']}>
+            <span className={styles['kicker']}>Local-first</span>
+            <strong>Data stays here</strong>
+            <p>Backups are portable JSON files you control.</p>
           </div>
         </div>
-      </Card>
 
-      <Card variant="panel" className={styles['settings-panel']}>
-        <SectionHeader
-          title="Data"
-          meta="Backup & reset"
-          actions={<Database aria-hidden className={styles['settings-heading-icon']} />}
-        />
-        <div className={styles.stack}>
-          <MenuRow
-            icon={<Download aria-hidden />}
-            title="Export backup"
-            description="Download a JSON copy of your plans and logs"
-            onClick={() => void exportPlannerData()}
-          />
-          <MenuRow
-            as="label"
-            icon={<Upload aria-hidden />}
-            title="Import backup"
-            description="Restore from a previous JSON file"
-          >
-            <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
-          </MenuRow>
-          <MenuRow
-            danger
-            icon={<RotateCcw aria-hidden />}
-            title="Clear local data"
-            description="Permanently delete everything on this device"
-            onClick={handleClear}
-          />
+        {/* Data Panel */}
+        <div className={cx(styles['bento-panel'], styles['bento-data'])}>
+          <div className={styles['bento-header-group']}>
+            <div>
+              <h2>Data</h2>
+              <span>Backup or reset</span>
+            </div>
+            <Database className={styles['bento-icon']} aria-hidden />
+          </div>
+          <div className={styles['action-list']}>
+            <button type="button" className={styles['action-item']} onClick={() => void exportPlannerData()}>
+              <div className={styles['action-icon']}><Download aria-hidden /></div>
+              <div className={styles['action-text']}>
+                <strong>Export backup</strong>
+                <span>Download JSON copy</span>
+              </div>
+            </button>
+            <label className={styles['action-item']}>
+              <div className={styles['action-icon']}><Upload aria-hidden /></div>
+              <div className={styles['action-text']}>
+                <strong>Import backup</strong>
+                <span>Restore from JSON</span>
+              </div>
+              <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
+            </label>
+            <button type="button" className={cx(styles['action-item'], styles['danger'])} onClick={handleClear}>
+              <div className={styles['action-icon']}><RotateCcw aria-hidden /></div>
+              <div className={styles['action-text']}>
+                <strong>Clear local data</strong>
+                <span>Permanently delete everything</span>
+              </div>
+            </button>
+          </div>
         </div>
-      </Card>
 
-      <SupportSection />
+        {/* Support Panel */}
+        <div className={cx(styles['bento-panel'], styles['bento-support'])}>
+          <SupportSection />
+        </div>
+      </div>
 
-      <p className={styles['settings-disclaimer-pill']}>
+      <p className={styles['disclaimer']}>
         <AlertTriangle aria-hidden />
-        Educational tool only — not medical advice.
+        Educational tool only. Not medical advice.
       </p>
     </Screen>
   );

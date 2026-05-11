@@ -41,7 +41,17 @@
 /* Mobile-first hierarchy pass */
 .app-shell {
   max-width: 100%;
-  padding: 12px 12px calc(96px + env(safe-area-inset-bottom, 0px));
+  padding: 12px;
+}
+
+.app-content {
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .app-content {
+    padding-bottom: 32px;
+  }
 }
 
 .screen {

@@ -3,7 +3,7 @@ import { Button } from '../ui/Button';
 import { Eyebrow } from '../ui/Eyebrow';
 import styles from '../../styles/app.module.css';
 import { cx } from '../../utils/ui/classNames';
-import { useAuth } from '../../auth/AuthProvider';
+import { useAuth } from '../../auth/AuthContext';
 
 interface OnboardingProps {
   onAccept: () => Promise<void>;

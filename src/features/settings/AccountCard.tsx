@@ -9,9 +9,7 @@ import {
   RefreshCcw,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
-import { useAuth } from '../../auth/AuthProvider';
+import { useAuth } from '../../auth/AuthContext';
 import { cx } from '../../utils/ui/classNames';
 import styles from '../../styles/app.module.css';
 
@@ -30,19 +28,19 @@ function statusForPhase(phase: string): StatusConfig {
   switch (phase) {
     case 'reading-local':
     case 'reading-cloud':
-      return { label: 'Reading data…', icon: <RefreshCcw aria-hidden />, tone: 'progress' };
+      return { label: 'Reading data…', icon: <RefreshCcw aria-hidden className={styles['status-spin']} />, tone: 'progress' };
     case 'writing':
-      return { label: 'Uploading to your account…', icon: <RefreshCcw aria-hidden />, tone: 'progress' };
+      return { label: 'Uploading…', icon: <RefreshCcw aria-hidden className={styles['status-spin']} />, tone: 'progress' };
     case 'verifying':
-      return { label: 'Verifying cloud copy…', icon: <RefreshCcw aria-hidden />, tone: 'progress' };
+      return { label: 'Verifying…', icon: <RefreshCcw aria-hidden className={styles['status-spin']} />, tone: 'progress' };
     case 'clearing-local':
-      return { label: 'Tidying local data…', icon: <RefreshCcw aria-hidden />, tone: 'progress' };
+      return { label: 'Tidying data…', icon: <RefreshCcw aria-hidden className={styles['status-spin']} />, tone: 'progress' };
     case 'error':
       return { label: 'Sync paused', icon: <AlertTriangle aria-hidden />, tone: 'error' };
     case 'done':
     case 'idle':
     default:
-      return { label: 'Synced with Google', icon: <Check aria-hidden />, tone: 'done' };
+      return { label: 'Synced', icon: <Check aria-hidden />, tone: 'done' };
   }
 }
 
@@ -71,48 +69,50 @@ export function AccountCard() {
   // Local-only build (Firebase not configured).
   if (!auth.firebaseEnabled) {
     return (
-      <Card variant="panel" className={cx(styles['account-card'], styles['settings-card-full'])}>
-        <div className={styles['account-row']}>
-          <div className={cx(styles['account-avatar'], styles['account-avatar-local'])}>
+      <div className={styles['account-view']}>
+        <div className={styles['account-profile']}>
+          <div className={styles['account-avatar']}>
             <CloudOff aria-hidden />
           </div>
-          <div className={styles['account-meta']}>
+          <div className={styles['account-info']}>
             <strong>Local mode</strong>
             <span>Data stays on this device.</span>
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 
   // Signed out — invite to sync.
   if (!auth.user) {
     return (
-      <Card variant="panel" className={cx(styles['account-card'], styles['settings-card-full'])}>
-        <div className={styles['account-row']}>
-          <div className={cx(styles['account-avatar'], styles['account-avatar-empty'])}>
+      <div className={styles['account-view']}>
+        <div className={styles['account-profile']}>
+          <div className={styles['account-avatar']}>
             <Cloud aria-hidden />
           </div>
-          <div className={styles['account-meta']}>
+          <div className={styles['account-info']}>
             <strong>Sign in to sync</strong>
-            <span>Your local plans merge into your account.</span>
+            <span>Merge plans to your account</span>
           </div>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => void handleSignIn()}
-          disabled={signingIn || auth.authLoading}
-          className={styles['account-cta']}
-        >
-          <LogIn aria-hidden />
-          {signingIn ? 'Opening Google…' : 'Continue with Google'}
-        </Button>
+        <div className={styles['account-actions']}>
+          <button
+            type="button"
+            className={cx(styles['account-btn'], styles['primary'])}
+            onClick={() => void handleSignIn()}
+            disabled={signingIn || auth.authLoading}
+          >
+            <LogIn aria-hidden />
+            {signingIn ? 'Opening Google…' : 'Continue with Google'}
+          </button>
+        </div>
         {signInError && (
-          <p role="alert" className={styles['error-text']}>
+          <p role="alert" style={{ color: 'var(--status-missed)', fontSize: '0.85rem', margin: '4px 0 0' }}>
             {signInError}
           </p>
         )}
-      </Card>
+      </div>
     );
   }
 
@@ -121,64 +121,49 @@ export function AccountCard() {
   const status = statusForPhase(auth.migration.phase);
   const showAvatarImage = Boolean(user.photoURL) && !avatarFailed;
   const showRetry = auth.migration.phase === 'error';
-  const isProgress = status.tone === 'progress';
 
   return (
-    <Card
-      variant="panel"
-      className={cx(
-        styles['account-card'],
-        styles['account-card-active'],
-        styles['settings-card-full'],
-      )}
-    >
-      <div className={styles['account-avatar']}>
-        {showAvatarImage ? (
-          <img
-            src={user.photoURL ?? ''}
-            alt=""
-            referrerPolicy="no-referrer"
-            onError={() => setAvatarFailed(true)}
-          />
-        ) : (
-          <span aria-hidden>{initialFromName(user.displayName, user.email)}</span>
-        )}
-      </div>
-      <div className={styles['account-meta']}>
-        <strong>{user.displayName ?? user.email ?? 'Signed in'}</strong>
-        {user.email && user.displayName && <span>{user.email}</span>}
-      </div>
-      <div
-        className={cx(
-          styles['account-status'],
-          styles[`account-status-${status.tone}`],
-        )}
-      >
-        <span
-          className={cx(
-            styles['account-status-icon'],
-            isProgress ? styles['account-status-spin'] : undefined,
+    <div className={styles['account-view']}>
+      <div className={styles['account-profile']}>
+        <div className={styles['account-avatar']}>
+          {showAvatarImage ? (
+            <img
+              src={user.photoURL ?? ''}
+              alt=""
+              referrerPolicy="no-referrer"
+              onError={() => setAvatarFailed(true)}
+            />
+          ) : (
+            <span aria-hidden>{initialFromName(user.displayName, user.email)}</span>
           )}
-        >
-          {status.icon}
-        </span>
-        <span className={styles['account-status-label']}>{status.label}</span>
+        </div>
+        <div className={styles['account-info']}>
+          <strong>{user.displayName ?? user.email ?? 'Signed in'}</strong>
+          {user.email && user.displayName && <span>{user.email}</span>}
+        </div>
+      </div>
+
+      <div className={cx(styles['account-status-bar'], styles[status.tone])}>
+        <div className={styles['status-icon']}>{status.icon}</div>
+        <span>{status.label}</span>
+      </div>
+
+      <div className={styles['account-actions']}>
         {showRetry && (
           <button
             type="button"
-            className={styles['account-status-retry']}
+            className={styles['account-btn']}
             onClick={() => void auth.retryMigration()}
           >
-            Retry
+            <RefreshCcw aria-hidden />
+            Retry Sync
           </button>
         )}
-      </div>
-      <div className={styles['account-actions']}>
-        <Button variant="ghost" size="small" onClick={handleSignOut}>
+        <button type="button" className={styles['account-btn']} onClick={handleSignOut}>
           <LogOut aria-hidden />
           Sign out
-        </Button>
+        </button>
       </div>
-    </Card>
+    </div>
   );
 }
