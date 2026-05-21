@@ -20,7 +20,7 @@ import { analyzeCycleReview } from '../../utils/cycleReview';
 import { formatNumber } from '../../utils/reconstitution';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Screen } from '../../components/ui/Screen';
-import { StatusLabel } from '../../components/ui/Badge';
+import { Pill, StatusLabel } from '../../components/ui/Badge';
 import { PlanEditDialog } from './PlanEditDialog';
 import styles from '../../styles/app.module.css';
 import { cx } from '../../utils/ui/classNames';
@@ -71,84 +71,111 @@ export function PlannerView({
         return (
           <article
             key={plan.id}
-            className={cx(styles['plan-row'], styles[status.cycleState], status.due && !status.completed && styles.due)}
+            className={cx(
+              styles['catalog-row'],
+              styles[status.cycleState],
+              status.due && !status.completed && styles.due,
+            )}
             style={{ animationDelay: `${index * 35}ms` }}
             aria-label={`${plan.name}, ${cycleLabelText}, ${todayLabel} today`}
           >
-            <div className={styles['plan-state-rail']} title={cycleLabelText}>
-              <CycleIcon aria-hidden />
-            </div>
+            <div className={styles['catalog-row-main']}>
+              <div className={styles['catalog-title-line']}>
+                <div>
+                  <h3>{plan.name}</h3>
+                  <p>
+                    <span>{plan.route}</span>
+                    <span>Started {plan.startDate}</span>
+                    <span>{plan.reminderTime || 'No reminder'}</span>
+                    {plan.calculator && (
+                      <span className={styles['plan-calc-inline']}>
+                        <FlaskConical aria-hidden />
+                        {formatNumber(plan.calculator.syringeUnits)} units / {formatNumber(plan.calculator.drawMl, 3)} mL
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <Pill tone={status.cycleState === 'active' ? 'on' : status.cycleState === 'off' ? 'off' : 'neutral'}>
+                  <CycleIcon aria-hidden />
+                  {cycleLabelText}
+                </Pill>
+              </div>
 
-            <div className={styles['plan-row-main']}>
-              <div className={styles['plan-name-line']}>
-                <h3>{plan.name}</h3>
-                <div className={styles['plan-status-pair']} aria-label={`${todayLabel} today`}>
-                  <StatusLabel tone={status.completed ? 'done' : status.skipped || status.due ? 'not-done' : 'neutral'}>
-                    <TodayIcon aria-hidden />
-                    {todayLabel}
-                  </StatusLabel>
+              <dl className={styles['catalog-fact-grid']}>
+                <div>
+                  <dt>Dose</dt>
+                  <dd>{plan.dose}</dd>
+                </div>
+                <div>
+                  <dt>Schedule</dt>
+                  <dd>{frequencyLabel(plan.frequency)}</dd>
+                </div>
+                <div>
+                  <dt>Cycle</dt>
+                  <dd>{cycleLabel(plan)}</dd>
+                </div>
+                <div>
+                  <dt>Next</dt>
+                  <dd>{status.nextTransitionDate || 'None'}</dd>
+                </div>
+                <div>
+                  <dt>Today</dt>
+                  <dd>
+                    <StatusLabel tone={status.completed ? 'done' : status.skipped || status.due ? 'not-done' : 'neutral'}>
+                      <TodayIcon aria-hidden />
+                      {todayLabel}
+                    </StatusLabel>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Baseline</dt>
+                  <dd>{review.baseline?.date || status.scheduleAnchorDate || plan.startDate}</dd>
+                </div>
+              </dl>
+
+              <div className={styles['catalog-copy-grid']}>
+                <div>
+                  <strong>Review</strong>
+                  <p>
+                    <ReviewIcon aria-hidden />
+                    {review.headline}
+                  </p>
+                </div>
+                <div>
+                  <strong>Details</strong>
+                  <p>{review.detail}</p>
+                </div>
+                <div>
+                  <strong>Notes</strong>
+                  <p>{plan.notes || 'No notes saved for this plan.'}</p>
                 </div>
               </div>
 
-              <div className={styles['plan-fact-strip']}>
-                <span>
-                  <strong>Dose</strong>
-                  {plan.dose}
-                </span>
-                <span>
-                  <strong>Schedule</strong>
-                  {frequencyLabel(plan.frequency)}
-                </span>
-                <span>
-                  <strong>Cycle</strong>
-                  {cycleLabel(plan)}
-                </span>
-                <span>
-                  <strong>Next</strong>
-                  {status.nextTransitionDate || 'None'}
-                </span>
+              <div className={styles['catalog-flag-line']}>
+                {review.facts.map((fact) => (
+                  <span key={fact}>{fact}</span>
+                ))}
               </div>
-
-              <div className={cx(styles['plan-review-line'], styles[review.level])}>
-                <ReviewIcon aria-hidden />
-                <span>{review.headline}</span>
-                {review.baseline && <strong>{review.baseline.date}</strong>}
-              </div>
-
-              <div className={styles['plan-secondary-line']}>
-                <span>{plan.route}</span>
-                <span>Started {plan.startDate}</span>
-                <span>{plan.reminderTime || 'No reminder'}</span>
-                {plan.calculator && (
-                  <span className={styles['plan-calc-inline']}>
-                    <FlaskConical aria-hidden />
-                    {formatNumber(plan.calculator.syringeUnits)} units / {formatNumber(plan.calculator.drawMl, 3)} mL
-                  </span>
-                )}
-              </div>
-              {plan.notes && <p className={styles['plan-note-line']}>{plan.notes}</p>}
             </div>
 
-            <div className={styles['plan-row-actions']}>
+            <div className={styles['plan-catalog-actions']}>
               <button
                 type="button"
-                className={cx(styles['icon-action'], styles.primary)}
+                className={styles['catalog-add-button']}
                 onClick={() => setEditingPlan(plan)}
                 aria-label={`Edit ${plan.name}`}
-                title="Edit"
               >
                 <Pencil aria-hidden />
-                <span className={styles['plan-action-label']}>Edit</span>
+                Edit
               </button>
               <button
                 type="button"
-                className={styles['icon-action']}
+                className={cx(styles['catalog-add-button'], styles['catalog-archive-button'])}
                 onClick={() => void onArchive(plan.id)}
                 aria-label={`Archive ${plan.name}`}
-                title="Archive"
               >
                 <Archive aria-hidden />
-                <span className={styles['plan-action-label']}>Archive</span>
+                Archive
               </button>
             </div>
           </article>
