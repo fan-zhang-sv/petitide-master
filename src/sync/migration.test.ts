@@ -216,8 +216,25 @@ describe('migrateLocalToCloud', () => {
     await expect(
       migrateLocalToCloud({ uid: 'u1', firestore: fakeFirestore, db }),
     ).rejects.toThrow(/verification failed/i)
-
+    
     store.set = original
     expect(await db.plans.count()).toBe(1)
+  })
+
+  it('short-circuits and returns done immediately if local is empty and cloud migration meta already exists', async () => {
+    store.set('users/u1/meta/migration', {
+      migratedAt: new Date().toISOString(),
+      schemaVersion: 1,
+    })
+
+    const result = await migrateLocalToCloud({
+      uid: 'u1',
+      firestore: fakeFirestore,
+      db,
+    })
+
+    expect(result.hadLocalData).toBe(false)
+    expect(result.plansWritten).toBe(0)
+    expect(result.logsWritten).toBe(0)
   })
 })

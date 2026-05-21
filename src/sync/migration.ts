@@ -189,6 +189,24 @@ export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationR
 
   const hadLocalData = local.plans.length > 0 || local.logs.length > 0
 
+  // Optimization: If local data is empty, check if the cloud is already migrated/initialized.
+  // This prevents full collection scans, batch writes, and verifications on every page load.
+  if (!hadLocalData) {
+    try {
+      const migrationSnap = await withTimeout(
+        getDoc(doc(firestore, 'users', uid, 'meta', 'migration')),
+        6000,
+        'Checking cloud migration status timed out.'
+      )
+      if (migrationSnap.exists()) {
+        onPhase?.('done')
+        return { plansWritten: 0, logsWritten: 0, duplicateLogsDeleted: 0, hadLocalData: false }
+      }
+    } catch (e) {
+      console.warn('Failed to quick-check cloud migration status, falling back to full flow:', e)
+    }
+  }
+
   onPhase?.('reading-cloud')
   const cloud = await withTimeout(
     readCloud(firestore, uid),
