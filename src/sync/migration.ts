@@ -137,16 +137,42 @@ async function clearLocalPlanner(db: PeptidePlannerDatabase): Promise<void> {
   })
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(message))
+    }, ms)
+    promise.then(
+      (res) => {
+        clearTimeout(timer)
+        resolve(res)
+      },
+      (err) => {
+        clearTimeout(timer)
+        reject(err)
+      }
+    )
+  })
+}
+
 export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationResult> {
   const { uid, firestore, db, onPhase } = args
 
   onPhase?.('reading-local')
-  const local = await readLocal(db)
+  const local = await withTimeout(
+    readLocal(db),
+    4000,
+    'Reading local database timed out. WebKit/iOS storage subsystem may be locked after redirect. Please try reloading the app.'
+  )
 
   const hadLocalData = local.plans.length > 0 || local.logs.length > 0
 
   onPhase?.('reading-cloud')
-  const cloud = await readCloud(firestore, uid)
+  const cloud = await withTimeout(
+    readCloud(firestore, uid),
+    6000,
+    'Reading cloud database timed out. Please check your internet connection.'
+  )
 
   if (!hadLocalData && cloud.plans.length === 0 && cloud.logs.length === 0 && !cloud.settings) {
     // Nothing to migrate, nothing to seed — just stamp meta and exit.
@@ -169,24 +195,40 @@ export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationR
         schemaVersion: 1,
       })
     }
-    await batch.commit()
+    await withTimeout(
+      batch.commit(),
+      8000,
+      'Initializing cloud database timed out. Please check your internet connection.'
+    )
     return { plansWritten: 0, logsWritten: 0, duplicateLogsDeleted: 0, hadLocalData: false }
   }
 
   const merged = mergePlannerData(local, cloud)
 
   onPhase?.('writing')
-  await writeCloud(firestore, uid, merged)
+  await withTimeout(
+    writeCloud(firestore, uid, merged),
+    8000,
+    'Uploading data to cloud timed out. Please check your internet connection.'
+  )
 
   onPhase?.('verifying')
-  const ok = await verifyCloud(firestore, uid, merged)
+  const ok = await withTimeout(
+    verifyCloud(firestore, uid, merged),
+    5000,
+    'Cloud verification timed out. Please check your internet connection.'
+  )
   if (!ok) {
     throw new Error('Cloud verification failed after migration. Local data was not cleared.')
   }
 
   if (hadLocalData) {
     onPhase?.('clearing-local')
-    await clearLocalPlanner(db)
+    await withTimeout(
+      clearLocalPlanner(db),
+      4000,
+      'Clearing local database timed out.'
+    )
   }
 
   return {

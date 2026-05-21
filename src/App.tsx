@@ -7,6 +7,7 @@ import type { MainTab, TabConfig } from './types';
 import { todayIso, addIsoDays } from './utils/dates';
 import { getStatusesForDate, getDayPlanStatus } from './utils/cycleEngine';
 import { AuthProvider } from './auth/AuthProvider';
+import { useAuth } from './auth/AuthContext';
 
 // Layout Components
 import { Sidebar } from './components/layout/Sidebar';
@@ -38,7 +39,9 @@ const desktopTabs: TabConfig[] = [
 
 function AppShell() {
   const store = usePlannerStore();
+  const auth = useAuth();
   const [activeTab, setActiveTab] = useState<MainTab>('today');
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   useEffect(() => {
     document.documentElement.scrollTop = 0;
@@ -47,6 +50,17 @@ function AppShell() {
       window.scrollTo({ top: 0, left: 0 });
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (store.loading || !store.settings) {
+      const timer = setTimeout(() => {
+        setLoadingTimeout(true);
+      }, 6000);
+      return () => clearTimeout(timer);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [store.loading, store.settings]);
 
   const today = todayIso();
   const todayStatuses = useMemo(() => getStatusesForDate(store.activePlans, store.logs, today), [
@@ -70,9 +84,68 @@ function AppShell() {
   if (store.loading || !store.settings) {
     return (
       <main className={cx(styles['app-shell'], styles.centered)}>
-        <div className={styles['loading-card']}>
-          <Syringe aria-hidden />
-          <span>Loading planner</span>
+        <div 
+          className={styles['loading-card']} 
+          style={{ 
+            flexDirection: 'column', 
+            gap: '16px', 
+            maxWidth: '380px', 
+            textAlign: 'center',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px 28px',
+          }}
+        >
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <Syringe aria-hidden className={styles['status-spin']} style={{ width: '24px', height: '24px' }} />
+            <strong style={{ fontSize: '1.05rem' }}>Loading planner</strong>
+          </div>
+          {loadingTimeout && (
+            <div 
+              style={{ 
+                marginTop: '8px', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '16px', 
+                alignItems: 'center',
+                animation: 'fadeIn 0.3s ease-out',
+              }}
+            >
+              <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
+                This is taking longer than expected. On iOS, third-party authentication redirects can sometimes lock local storage (IndexedDB) access.
+              </p>
+              <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  className={styles['primary-button']}
+                  onClick={() => window.location.reload()}
+                  style={{ minHeight: '38px', padding: '0 16px', fontSize: '0.85rem' }}
+                >
+                  Reload App
+                </button>
+                {auth.user && (
+                  <button
+                    type="button"
+                    className={styles['ghost-button']}
+                    onClick={async () => {
+                      if (window.confirm("Would you like to sign out and fall back to local-first mode? Your local data remains safe on this device.")) {
+                        try {
+                          await auth.signOut();
+                          window.location.reload();
+                        } catch (e) {
+                          console.error(e);
+                          window.location.reload();
+                        }
+                      }
+                    }}
+                    style={{ minHeight: '38px', padding: '0 16px', fontSize: '0.85rem' }}
+                  >
+                    Reset Sync
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </main>
     );

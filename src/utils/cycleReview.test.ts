@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import type { InjectionLog, PlannedPeptide } from '../types'
 import { analyzeCycleReview } from './cycleReview'
 
@@ -26,6 +26,15 @@ const log = (patch: Partial<InjectionLog>): InjectionLog => ({
 })
 
 describe('analyzeCycleReview', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-05-05'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('returns urgent review when side-effect notes exist', () => {
     const review = analyzeCycleReview(
       plan(),
