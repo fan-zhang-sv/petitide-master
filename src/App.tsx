@@ -4,8 +4,8 @@ import styles from './styles/app.module.css';
 import { cx } from './utils/ui/classNames';
 import { usePlannerStore } from './db/usePlannerStore';
 import type { MainTab, TabConfig } from './types';
-import { todayIso, addIsoDays } from './utils/dates';
-import { getStatusesForDate, getDayPlanStatus } from './utils/cycleEngine';
+import { todayIso } from './utils/dates';
+import { getStatusesForDate } from './utils/cycleEngine';
 import { AuthProvider } from './auth/AuthProvider';
 import { useAuth } from './auth/AuthContext';
 

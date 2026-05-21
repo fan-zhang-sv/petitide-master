@@ -1,9 +1,9 @@
-import { Activity, AlertCircle, CalendarClock, Check, CheckCircle2, Gauge, Pause, Power, X } from 'lucide-react';
+import { Activity, CalendarClock, Check, CheckCircle2, Pause, Power, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { format } from 'date-fns';
 import type { PlannedPeptide, InjectionLog, DayPlanStatus } from '../../types';
-import { addIsoDays, todayIso, parseDate } from '../../utils/dates';
-import { getDayPlanStatus, getAdherence, getCycleState } from '../../utils/cycleEngine';
+import { todayIso, parseDate } from '../../utils/dates';
+import { getAdherence, getCycleState } from '../../utils/cycleEngine';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { PageHeader } from '../../components/ui/Header';
 import { Screen } from '../../components/ui/Screen';

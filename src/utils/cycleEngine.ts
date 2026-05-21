@@ -117,8 +117,8 @@ export function getLogForPlanDate(logs: InjectionLog[], planId: string, date: st
 
 export function getEffectiveCycleAnchor(
   plan: PlannedPeptide,
-  logs: InjectionLog[] = [],
-  currentDate = todayIso(),
+  _logs: InjectionLog[] = [],
+  _currentDate = todayIso(),
 ): EffectiveCycleAnchor {
   return {
     cycleStartDate: plan.startDate,
