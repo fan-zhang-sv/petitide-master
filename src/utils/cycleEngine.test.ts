@@ -120,7 +120,7 @@ describe('cycle engine', () => {
     expect(adherence.rate).toBe(100)
   })
 
-  it('uses completed history to shift the next off-cycle date', () => {
+  it('does not shift the cycle dates based on completed or skipped history', () => {
     const subject = plan({ cycleDays: 7, offDays: 3 })
     const logs = [
       {
@@ -139,12 +139,13 @@ describe('cycle engine', () => {
       },
     ]
 
-    expect(getEffectiveCycleAnchor(subject, logs, '2026-05-06').cycleStartDate).toBe('2026-05-05')
-    expect(getNextTransitionDate(subject, '2026-05-06', logs)).toBe('2026-05-12')
-    expect(getCycleState(subject, '2026-05-12', logs)).toBe('off')
+    const anchor = getEffectiveCycleAnchor(subject, logs, '2026-05-06')
+    expect(anchor.cycleStartDate).toBe('2026-05-01')
+    expect(getNextTransitionDate(subject, '2026-05-06', logs)).toBe('2026-05-08')
+    expect(getCycleState(subject, '2026-05-08', logs)).toBe('off')
   })
 
-  it('uses skipped history after completed history to shift restart date', () => {
+  it('does not shift the cycle restart dates based on skipped history', () => {
     const subject = plan({ cycleDays: 7, offDays: 3 })
     const logs = [
       {
@@ -170,12 +171,13 @@ describe('cycle engine', () => {
       },
     ]
 
-    expect(getEffectiveCycleAnchor(subject, logs, '2026-05-09').cycleStartDate).toBe('2026-05-01')
+    const anchor = getEffectiveCycleAnchor(subject, logs, '2026-05-09')
+    expect(anchor.cycleStartDate).toBe('2026-05-01')
     expect(getCycleState(subject, '2026-05-09', logs)).toBe('off')
     expect(getNextTransitionDate(subject, '2026-05-09', logs)).toBe('2026-05-11')
   })
 
-  it('marks gapped history as low confidence while still projecting from latest use', () => {
+  it('preserves static cycle anchor regardless of gapped log history', () => {
     const subject = plan({ cycleDays: 7, offDays: 3 })
     const logs = [
       {
@@ -195,7 +197,7 @@ describe('cycle engine', () => {
     ]
 
     const anchor = getEffectiveCycleAnchor(subject, logs, '2026-05-06')
-    expect(anchor.cycleStartDate).toBe('2026-05-06')
-    expect(anchor.confidence).toBe('low')
+    expect(anchor.cycleStartDate).toBe('2026-05-01')
+    expect(anchor.confidence).toBe('high')
   })
 })

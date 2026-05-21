@@ -120,61 +120,9 @@ export function getEffectiveCycleAnchor(
   logs: InjectionLog[] = [],
   currentDate = todayIso(),
 ): EffectiveCycleAnchor {
-  if (!plan.cycleDays || !plan.offDays) {
-    return { cycleStartDate: plan.startDate, confidence: 'high', reason: 'configured' }
-  }
-
-  const planLogs = logs
-    .filter((log) => log.planId === plan.id && log.date <= currentDate)
-    .sort((a, b) => a.date.localeCompare(b.date))
-
-  if (planLogs.length === 0) {
-    return { cycleStartDate: plan.startDate, confidence: 'high', reason: 'configured' }
-  }
-
-  const streaks: Array<{ status: InjectionLog['status']; start: string; end: string; count: number }> = []
-  for (const log of planLogs) {
-    const last = streaks.at(-1)
-    const isContiguous = last ? daysBetween(last.end, log.date) <= 1 : false
-    if (last && last.status === log.status && isContiguous) {
-      last.end = log.date
-      last.count += 1
-    } else {
-      streaks.push({ status: log.status, start: log.date, end: log.date, count: 1 })
-    }
-  }
-
-  const latest = streaks.at(-1)
-  if (!latest) {
-    return { cycleStartDate: plan.startDate, confidence: 'high', reason: 'configured' }
-  }
-
-  const hasGap = planLogs.some((log, index) => index > 0 && daysBetween(planLogs[index - 1].date, log.date) > 1)
-  const confidence = latest.count >= 2 && !hasGap ? 'high' : latest.count >= 2 ? 'medium' : 'low'
-
-  if (latest.status === 'completed') {
-    return {
-      cycleStartDate: latest.start,
-      confidence,
-      reason: hasGap ? 'gapped-history' : 'completed-history',
-    }
-  }
-
-  const hasCompletedBeforeLatest = streaks
-    .slice(0, -1)
-    .some((streak) => streak.status === 'completed')
-
-  if (latest.status === 'skipped' && hasCompletedBeforeLatest) {
-    return {
-      cycleStartDate: addIsoDays(latest.start, -plan.cycleDays),
-      confidence,
-      reason: hasGap ? 'gapped-history' : 'skipped-history',
-    }
-  }
-
   return {
     cycleStartDate: plan.startDate,
-    confidence: 'low',
+    confidence: 'high',
     reason: 'configured',
   }
 }

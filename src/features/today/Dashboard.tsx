@@ -1,8 +1,9 @@
-import { AlertCircle, CalendarClock, Check, Gauge, Pause, Power, X } from 'lucide-react';
+import { Activity, AlertCircle, CalendarClock, Check, CheckCircle2, Gauge, Pause, Power, X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { format } from 'date-fns';
 import type { PlannedPeptide, InjectionLog, DayPlanStatus } from '../../types';
-import { addIsoDays, todayIso } from '../../utils/dates';
-import { getDayPlanStatus } from '../../utils/cycleEngine';
+import { addIsoDays, todayIso, parseDate } from '../../utils/dates';
+import { getDayPlanStatus, getAdherence, getCycleState } from '../../utils/cycleEngine';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { PageHeader } from '../../components/ui/Header';
 import { Screen } from '../../components/ui/Screen';
@@ -14,7 +15,6 @@ interface DashboardProps {
   plans: PlannedPeptide[];
   logs: InjectionLog[];
   todayStatuses: DayPlanStatus[];
-  overdueStatuses: DayPlanStatus[];
   onLog: (log: Omit<InjectionLog, 'id' | 'createdAt'>) => Promise<void>;
   onOpenCatalog: () => void;
 }
@@ -23,39 +23,55 @@ export function Dashboard({
   plans,
   logs,
   todayStatuses,
-  overdueStatuses,
   onLog,
   onOpenCatalog,
 }: DashboardProps) {
   const today = todayIso();
   const dueToday = todayStatuses.filter((status) => status.due);
   const completedToday = todayStatuses.filter((status) => status.completed || status.skipped);
-  const actionItems = [...overdueStatuses, ...dueToday].filter(
-    (status, index, all) =>
-      all.findIndex((item) => item.plan.id === status.plan.id && item.date === status.date) === index &&
-      !status.completed &&
-      !status.skipped
+  const actionItems = dueToday.filter(
+    (status) => !status.completed && !status.skipped
   );
   const actionKeys = new Set(actionItems.map((status) => `${status.plan.id}:${status.date}`));
   const completedKeys = new Set(completedToday.map((status) => `${status.plan.id}:${status.date}`));
   const offCycleToday = todayStatuses.filter(
     (status) => status.cycleState === 'off' && !actionKeys.has(`${status.plan.id}:${status.date}`) && !completedKeys.has(`${status.plan.id}:${status.date}`),
   );
-  const lastSevenStatuses = plans.flatMap((plan) =>
-    Array.from({ length: 7 }, (_, index) =>
-      getDayPlanStatus(plan, logs, addIsoDays(today, -index), today),
-    ),
-  );
-  const sevenDayCompleted = lastSevenStatuses.filter((status) => status.completed).length;
-  const sevenDaySkipped = lastSevenStatuses.filter((status) => status.skipped).length;
-  const sevenDayMissed = lastSevenStatuses.filter((status) => status.missed).length;
-  const sevenDayTotal = sevenDayCompleted + sevenDaySkipped + sevenDayMissed;
-  const sevenDayRate = sevenDayTotal === 0 ? 0 : Math.round((sevenDayCompleted / sevenDayTotal) * 100);
+  const adherence = getAdherence(plans, logs, today);
+  const totalToday = actionItems.length + completedToday.length;
+  const progressValue = totalToday > 0 ? `${completedToday.length}/${totalToday}` : '0/0';
+  const progressDetail =
+    actionItems.length > 0
+      ? `${actionItems.length} remaining today`
+      : totalToday > 0
+      ? 'All logged for today!'
+      : 'No scheduled items today';
+
   const onCycleToday = todayStatuses.filter((status) => status.cycleState === 'active').length;
+  const offCycleCount = plans.length - onCycleToday;
+  const activeValue = `${onCycleToday}/${plans.length}`;
+  const activeDetail = offCycleCount > 0
+    ? `${offCycleCount} off-cycle resting`
+    : 'All active protocols';
+
   const nextChange = todayStatuses
     .filter((status) => status.nextTransitionDate)
     .sort((a, b) => a.nextTransitionDate!.localeCompare(b.nextTransitionDate!))[0];
-  const lowConfidence = todayStatuses.filter((status) => status.scheduleConfidence === 'low').length;
+
+  let nextChangeValue = 'None';
+  let nextChangeDetail = 'No scheduled change';
+
+  if (nextChange && nextChange.nextTransitionDate) {
+    try {
+      nextChangeValue = format(parseDate(nextChange.nextTransitionDate), 'MMM d');
+      const nextState = getCycleState(nextChange.plan, nextChange.nextTransitionDate, logs);
+      const phaseText = nextState === 'active' ? 'starts active' : 'goes off-cycle';
+      nextChangeDetail = `${nextChange.plan.name} ${phaseText}`;
+    } catch (e) {
+      nextChangeValue = nextChange.nextTransitionDate;
+      nextChangeDetail = nextChange.plan.name;
+    }
+  }
 
   if (plans.length === 0) {
     return (
@@ -74,28 +90,32 @@ export function Dashboard({
 
       <section className={styles['today-stat-grid']} aria-label="Today context">
         <TodayStat
-          icon={<Gauge aria-hidden />}
-          label="7-day completion"
-          value={`${sevenDayRate}%`}
-          detail={sevenDayTotal > 0 ? `${sevenDayCompleted}/${sevenDayTotal} completed` : 'No logged scheduled days'}
+          variant="progress"
+          icon={<CheckCircle2 aria-hidden />}
+          label="Today's Progress"
+          value={progressValue}
+          detail={progressDetail}
         />
         <TodayStat
+          variant="consistency"
+          icon={<Activity aria-hidden />}
+          label="Consistency"
+          value={`${adherence.rate}%`}
+          detail={adherence.due > 0 ? `${adherence.completed}/${adherence.due} logged doses` : 'No doses scheduled'}
+        />
+        <TodayStat
+          variant="active"
           icon={<Power aria-hidden />}
-          label="On cycle"
-          value={onCycleToday.toString()}
-          detail={`${plans.length} active plans`}
+          label="Active Cycles"
+          value={activeValue}
+          detail={activeDetail}
         />
         <TodayStat
+          variant="transition"
           icon={<CalendarClock aria-hidden />}
-          label="Next change"
-          value={nextChange?.nextTransitionDate ?? 'None'}
-          detail={nextChange?.plan.name ?? 'No scheduled change'}
-        />
-        <TodayStat
-          icon={<AlertCircle aria-hidden />}
-          label="Schedule confidence"
-          value={lowConfidence > 0 ? lowConfidence.toString() : 'Stable'}
-          detail={lowConfidence > 0 ? 'Low confidence schedules' : 'No low confidence'}
+          label="Next Transition"
+          value={nextChangeValue}
+          detail={nextChangeDetail}
         />
       </section>
 
@@ -162,17 +182,22 @@ function TodayStat({
   label,
   value,
   detail,
+  variant,
 }: {
   icon: ReactNode;
   label: string;
   value: string;
   detail: string;
+  variant: 'progress' | 'consistency' | 'active' | 'transition';
 }) {
   return (
-    <article className={styles['today-stat-card']}>
-      <span>{icon}</span>
-      <div>
+    <article className={cx(styles['today-stat-card'], styles[variant])}>
+      <div className={styles['stat-header']}>
         <p>{label}</p>
+        <span className={styles['stat-icon-wrapper']}>{icon}</span>
+      </div>
+      <div className={styles['stat-divider']} />
+      <div className={styles['stat-body']}>
         <strong>{value}</strong>
         <small>{detail}</small>
       </div>
@@ -187,7 +212,7 @@ function GroupHeading({ icon, title, count }: { icon: ReactNode; title: string; 
         {icon}
         {title}
       </span>
-      <strong>{count}</strong>
+      <span className={styles['today-group-count']}>{count}</span>
     </div>
   );
 }

@@ -69,17 +69,7 @@ function AppShell() {
     today,
   ]);
   
-  const overdueStatuses = useMemo(() => 
-    store.activePlans
-      .flatMap((plan) =>
-        Array.from({ length: 14 }, (_, index) => {
-          const date = addIsoDays(today, -index);
-          return getDayPlanStatus(plan, store.logs, date, today);
-        })
-      )
-      .filter((status) => status.overdue),
-    [store.activePlans, store.logs, today]
-  );
+
 
   if (store.loading || !store.settings) {
     return (
@@ -176,7 +166,6 @@ function AppShell() {
             plans={store.activePlans}
             logs={store.logs}
             todayStatuses={todayStatuses}
-            overdueStatuses={overdueStatuses}
             onLog={store.addLog}
             onOpenCatalog={() => setActiveTab('plans')}
           />

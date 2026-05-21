@@ -52,50 +52,92 @@
 
 .today-stat-card {
   composes: sys-panel from global;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--space-base);
-  align-items: center;
-  padding: var(--space-base);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-xs);
+  padding: var(--space-base) var(--space-md);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition:
+    border-color var(--duration-fast) var(--ease-clinical),
+    box-shadow var(--duration-fast) var(--ease-clinical);
+  cursor: default;
+  position: relative;
 }
 
-.today-stat-card > span {
-  width: 32px;
-  height: 32px;
+.today-stat-card:hover {
+  border-color: var(--mint);
+  box-shadow:
+    0 10px 24px rgba(35, 49, 45, 0.05),
+    0 2px 6px rgba(35, 49, 45, 0.02);
+}
+
+/* Header line */
+.stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.stat-header p {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.stat-icon-wrapper {
+  color: var(--muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--ink);
-  flex-shrink: 0;
+  transition: color var(--duration-fast) var(--ease-clinical);
 }
 
-.today-stat-card div {
+.today-stat-card:hover .stat-icon-wrapper {
+  color: var(--ink);
+}
+
+.stat-icon-wrapper svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2px;
+}
+
+/* Horizontal fine rule */
+.stat-divider {
+  height: 1px;
+  background: var(--line);
+  opacity: 0.45;
+  width: 100%;
+  margin: var(--space-xs) 0;
+}
+
+/* Content block */
+.stat-body {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.today-stat-card p {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-heavy);
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.today-stat-card strong {
-  font-size: var(--text-xl);
-  font-weight: var(--weight-heavy);
+.stat-body strong {
+  font-size: 1.45rem;
+  font-weight: 800;
   color: var(--ink);
+  line-height: 1.1;
+  font-feature-settings: "tnum";
 }
 
-.today-stat-card small {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-heavy);
+.stat-body small {
+  font-size: 0.72rem;
+  font-weight: 600;
   color: var(--muted);
+  line-height: 1.35;
 }
 
 /* Today Board Bento Layout */
@@ -123,27 +165,41 @@
   justify-content: space-between;
   padding: 0 var(--space-xs);
   margin-bottom: var(--space-xs);
+  border-bottom: 1px solid rgba(221, 214, 200, 0.35);
+  padding-bottom: var(--space-xs);
 }
 
 .today-group-heading span {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-heavy);
+  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--muted);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
-.today-group-heading strong {
-  font-size: var(--text-base);
-  font-weight: var(--weight-heavy);
-  color: var(--ink);
-  background: var(--field);
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
+.today-group-heading span svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.2px;
+  opacity: 0.8;
+}
+
+.today-group-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  font-feature-settings: "tnum";
+  display: inline-flex;
+  align-items: center;
+}
+
+.today-group-count::before {
+  content: "•";
+  margin-right: 6px;
+  opacity: 0.55;
 }
 
 .today-list {
@@ -158,54 +214,166 @@
 }
 
 .today-board .status-card {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--space-base);
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: var(--space-base);
-  border-left-width: 4px;
+  padding: var(--space-base) var(--space-md);
   background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition:
+    border-color var(--duration-fast) var(--ease-clinical),
+    box-shadow var(--duration-fast) var(--ease-clinical),
+    transform var(--duration-fast) var(--ease-clinical);
 }
 
-.today-board .status-card.not-done { border-left-color: var(--status-due); }
-.today-board .status-card.done { border-left-color: var(--status-done); }
-.today-board .status-card.off { border-left-color: var(--status-off); }
-.today-board .status-card.on { border-left-color: var(--status-on); }
+.today-board .status-card:hover {
+  border-color: var(--mint);
+  box-shadow:
+    0 10px 24px rgba(35, 49, 45, 0.04),
+    0 2px 6px rgba(35, 49, 45, 0.01);
+  transform: translateY(-1px);
+}
+
+.today-board .status-card.off {
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  opacity: 0.75;
+}
+
+.today-board .status-card.off:hover {
+  opacity: 1;
+  border-color: var(--muted);
+}
 
 .status-card-main {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .status-card-main h3 {
-  font-size: var(--text-lg);
-  font-weight: var(--weight-heavy);
+  font-size: 1.02rem;
+  font-weight: 700;
   color: var(--ink);
+  margin: 0;
+  line-height: 1.25;
 }
 
-.status-card-main p {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-heavy);
+.status-card-meta {
+  font-size: 0.74rem;
+  font-weight: 600;
   color: var(--muted);
+  line-height: 1.35;
+  margin: 0;
 }
 
-.today-status-badges {
+/* Status Indicator Colors */
+.meta-completed {
+  color: var(--status-done) !important;
+}
+
+.meta-overdue {
+  color: var(--status-missed) !important;
+}
+
+.meta-scheduled {
+  color: var(--ink) !important;
+  opacity: 0.85;
+}
+
+.meta-skipped,
+.meta-off {
+  color: var(--muted) !important;
+}
+
+/* Micro-Actions layout and sizing */
+.today-row-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
-.status-label {
-  font-size: var(--text-xs);
-  font-weight: var(--weight-heavy);
-  color: var(--muted);
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--field);
+.action-btn {
+  height: 32px;
+  border-radius: 16px;
   border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 0 14px;
+  font-size: 0.76rem;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition:
+    background-color var(--duration-fast) var(--ease-clinical),
+    border-color var(--duration-fast) var(--ease-clinical),
+    color var(--duration-fast) var(--ease-clinical),
+    transform var(--duration-fast) var(--ease-clinical);
 }
+
+.action-btn svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.4px;
+}
+
+.action-btn:active {
+  transform: scale(0.96);
+}
+
+/* Hover Tint for Complete Button */
+.action-btn.complete:hover {
+  background-color: var(--status-done-bg);
+  border-color: var(--status-done);
+  color: var(--status-done);
+}
+
+/* Hover Tint for Skip Button */
+.action-btn.skip:hover {
+  background-color: var(--status-off-bg);
+  border-color: var(--status-off);
+  color: var(--status-off);
+}
+
+/* Clean Column Empty State */
+.today-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-lg) var(--space-md);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  color: var(--muted);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.15);
+  transition:
+    border-color var(--duration-fast) var(--ease-clinical),
+    background var(--duration-fast) var(--ease-clinical);
+}
+
+.today-empty-state svg {
+  width: 20px;
+  height: 20px;
+  color: var(--status-done);
+  stroke-width: 2.2px;
+  opacity: 0.8;
+}
+
+.today-empty-state span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 
 /* Plans: protocol cards optimized for phone-first scanning */
 .plans-wrapper {

@@ -1,8 +1,7 @@
-import { Check, Pause, Power, SkipForward, X } from 'lucide-react';
+import { Check, SkipForward } from 'lucide-react';
+import { format } from 'date-fns';
 import type { DayPlanStatus, InjectionLog } from '../../types';
-import { todayIso } from '../../utils/dates';
-import { Button } from '../../components/ui/Button';
-import { StatusLabel } from '../../components/ui/Badge';
+import { todayIso, parseDate } from '../../utils/dates';
 import styles from '../../styles/app.module.css';
 import { cx } from '../../utils/ui/classNames';
 
@@ -16,7 +15,9 @@ export function StatusCard({
   status,
   onLog,
 }: StatusCardProps) {
-  const canLog = status.date <= todayIso() && status.cycleState !== 'upcoming';
+  const today = todayIso();
+  const canLog = status.date <= today && status.cycleState !== 'upcoming';
+  const isOverdue = status.date < today;
 
   const log = (logStatus: 'completed' | 'skipped') =>
     onLog({
@@ -27,36 +28,62 @@ export function StatusCard({
       site: status.plan.injectionSites[0],
     });
 
+  let statusLabel = '';
+  let metaClass = '';
+
+  if (status.completed) {
+    statusLabel = 'Completed';
+    metaClass = styles['meta-completed'];
+  } else if (status.skipped) {
+    statusLabel = 'Skipped';
+    metaClass = styles['meta-skipped'];
+  } else if (status.cycleState === 'off') {
+    statusLabel = 'Off-cycle';
+    metaClass = styles['meta-off'];
+  } else if (isOverdue) {
+    statusLabel = 'Overdue';
+    metaClass = styles['meta-overdue'];
+  } else {
+    statusLabel = 'Scheduled';
+    metaClass = styles['meta-scheduled'];
+  }
+
+  const formattedDate = status.date !== today ? format(parseDate(status.date), 'MMM d') : '';
+  const doseText = status.plan.dose || 'Dose not set';
+
+  const metaParts = [statusLabel, formattedDate, doseText].filter(Boolean);
+  const metaText = metaParts.join(' · ');
+
   return (
     <article className={cx(styles['status-card'], styles[getCardKind(status)])}>
       <div className={styles['status-card-main']}>
-        <div className={styles['today-status-badges']}>
-          <StatusLabel tone={status.cycleState === 'active' ? 'on' : 'off'}>
-            {status.cycleState === 'active' ? <Power aria-hidden /> : <Pause aria-hidden />}
-            {status.cycleState === 'active' ? 'On' : 'Off'}
-          </StatusLabel>
-          <StatusLabel tone={status.completed ? 'done' : 'not-done'}>
-            {status.completed ? <Check aria-hidden /> : <X aria-hidden />}
-            {status.completed ? 'Done' : 'Not done'}
-          </StatusLabel>
-        </div>
         <h3>{status.plan.name}</h3>
-        <p>{status.date !== todayIso() ? `${status.date} · ` : ''}{status.plan.dose || 'Dose not set'}</p>
+        <p className={cx(styles['status-card-meta'], metaClass)}>{metaText}</p>
       </div>
 
       {canLog && (
         <div className={styles['today-row-actions']}>
           {!status.completed && (
-            <Button variant="primary" size="small" onClick={() => void log('completed')}>
+            <button
+              className={cx(styles['action-btn'], styles.complete)}
+              onClick={() => void log('completed')}
+              aria-label="Log completed dose"
+              title="Log dose"
+            >
               <Check aria-hidden />
-              Done
-            </Button>
+              <span>Log</span>
+            </button>
           )}
           {!status.skipped && (
-            <Button variant="ghost" size="small" onClick={() => void log('skipped')}>
+            <button
+              className={cx(styles['action-btn'], styles.skip)}
+              onClick={() => void log('skipped')}
+              aria-label="Skip dose"
+              title="Skip dose"
+            >
               <SkipForward aria-hidden />
-              Not done
-            </Button>
+              <span>Skip</span>
+            </button>
           )}
         </div>
       )}
@@ -70,3 +97,4 @@ function getCardKind(status: DayPlanStatus) {
   if (status.cycleState === 'off') return 'off';
   return 'on';
 }
+
