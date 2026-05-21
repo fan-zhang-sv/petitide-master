@@ -33,7 +33,10 @@ if (firebaseEnabled) {
   app = initializeApp(config)
   _auth = getAuth(app)
   // Cloud-only signed-in mode: do not persist Firestore data in IndexedDB.
-  _firestore = initializeFirestore(app, { localCache: memoryLocalCache() })
+  _firestore = initializeFirestore(app, {
+    localCache: memoryLocalCache(),
+    ignoreUndefinedProperties: true,
+  })
   _googleProvider = new GoogleAuthProvider()
   _googleProvider.setCustomParameters({ prompt: 'select_account' })
   if (config.measurementId) {

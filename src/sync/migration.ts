@@ -66,6 +66,25 @@ function chunk<T>(items: T[], size: number): T[][] {
   return out
 }
 
+function cleanForFirestore<T>(obj: T): T {
+  if (obj === null || obj === undefined) {
+    return obj
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(cleanForFirestore) as unknown as T
+  }
+  if (typeof obj === 'object') {
+    const cleaned = {} as Record<string, unknown>
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        cleaned[key] = cleanForFirestore(value)
+      }
+    }
+    return cleaned as unknown as T
+  }
+  return obj
+}
+
 async function writeCloud(
   firestore: Firestore,
   uid: string,
@@ -81,7 +100,7 @@ async function writeCloud(
     const batch = writeBatch(firestore)
     group.forEach((plan) => {
       const ref = doc(firestore, 'users', uid, 'plans', plan.id)
-      batch.set(ref, { ...plan, schemaVersion: 1 })
+      batch.set(ref, cleanForFirestore({ ...plan, schemaVersion: 1 }))
     })
     await batch.commit()
   }
@@ -91,20 +110,23 @@ async function writeCloud(
     const batch = writeBatch(firestore)
     group.forEach((log) => {
       const ref = doc(firestore, 'users', uid, 'logs', log.id)
-      batch.set(ref, { ...log, schemaVersion: 1 })
+      batch.set(ref, cleanForFirestore({ ...log, schemaVersion: 1 }))
     })
     await batch.commit()
   }
 
   const settingsBatch = writeBatch(firestore)
-  settingsBatch.set(doc(firestore, 'users', uid, 'settings', 'settings'), {
-    ...data.settings,
-    schemaVersion: 1,
-  })
-  settingsBatch.set(doc(firestore, 'users', uid, 'meta', 'migration'), {
-    migratedAt: new Date().toISOString(),
-    schemaVersion: 1,
-  })
+  settingsBatch.set(
+    doc(firestore, 'users', uid, 'settings', 'settings'),
+    cleanForFirestore({ ...data.settings, schemaVersion: 1 }),
+  )
+  settingsBatch.set(
+    doc(firestore, 'users', uid, 'meta', 'migration'),
+    cleanForFirestore({
+      migratedAt: new Date().toISOString(),
+      schemaVersion: 1,
+    }),
+  )
   await settingsBatch.commit()
 
   const deleteChunks = chunk(data.deletedLogIds, BATCH_LIMIT)
@@ -178,10 +200,13 @@ export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationR
     // Nothing to migrate, nothing to seed — just stamp meta and exit.
     onPhase?.('writing')
     const batch = writeBatch(firestore)
-    batch.set(doc(firestore, 'users', uid, 'meta', 'migration'), {
-      migratedAt: new Date().toISOString(),
-      schemaVersion: 1,
-    })
+    batch.set(
+      doc(firestore, 'users', uid, 'meta', 'migration'),
+      cleanForFirestore({
+        migratedAt: new Date().toISOString(),
+        schemaVersion: 1,
+      }),
+    )
     if (!cloud.settings) {
       const seeded: AppSettings = {
         id: 'settings',
@@ -190,10 +215,13 @@ export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationR
         notificationPermissionAsked: false,
         updatedAt: new Date().toISOString(),
       }
-      batch.set(doc(firestore, 'users', uid, 'settings', 'settings'), {
-        ...seeded,
-        schemaVersion: 1,
-      })
+      batch.set(
+        doc(firestore, 'users', uid, 'settings', 'settings'),
+        cleanForFirestore({
+          ...seeded,
+          schemaVersion: 1,
+        }),
+      )
     }
     await withTimeout(
       batch.commit(),
