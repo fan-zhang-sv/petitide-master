@@ -148,6 +148,12 @@ export function AccountCard() {
         <span>{status.label}</span>
       </div>
 
+      {auth.migration.error && (
+        <p role="alert" style={{ color: 'var(--status-missed)', fontSize: '0.85rem', margin: '4px 0 0', textAlign: 'center' }}>
+          {auth.migration.error}
+        </p>
+      )}
+
       <div className={styles['account-actions']}>
         {showRetry && (
           <button

@@ -161,7 +161,7 @@ export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationR
   onPhase?.('reading-local')
   const local = await withTimeout(
     readLocal(db),
-    4000,
+    10000,
     'Reading local database timed out. WebKit/iOS storage subsystem may be locked after redirect. Please try reloading the app.'
   )
 
@@ -170,7 +170,7 @@ export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationR
   onPhase?.('reading-cloud')
   const cloud = await withTimeout(
     readCloud(firestore, uid),
-    6000,
+    30000,
     'Reading cloud database timed out. Please check your internet connection.'
   )
 
@@ -197,7 +197,7 @@ export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationR
     }
     await withTimeout(
       batch.commit(),
-      8000,
+      30000,
       'Initializing cloud database timed out. Please check your internet connection.'
     )
     return { plansWritten: 0, logsWritten: 0, duplicateLogsDeleted: 0, hadLocalData: false }
@@ -208,14 +208,14 @@ export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationR
   onPhase?.('writing')
   await withTimeout(
     writeCloud(firestore, uid, merged),
-    8000,
+    45000,
     'Uploading data to cloud timed out. Please check your internet connection.'
   )
 
   onPhase?.('verifying')
   const ok = await withTimeout(
     verifyCloud(firestore, uid, merged),
-    5000,
+    30000,
     'Cloud verification timed out. Please check your internet connection.'
   )
   if (!ok) {
@@ -226,7 +226,7 @@ export async function migrateLocalToCloud(args: MigrateArgs): Promise<MigrationR
     onPhase?.('clearing-local')
     await withTimeout(
       clearLocalPlanner(db),
-      4000,
+      10000,
       'Clearing local database timed out.'
     )
   }
