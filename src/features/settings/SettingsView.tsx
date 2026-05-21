@@ -27,19 +27,45 @@ export function SettingsView({
   onSaveSettings,
   onRefresh,
 }: SettingsViewProps) {
+  const handleExport = async () => {
+    try {
+      const backup = await exportPlannerData();
+      const blob = new Blob([JSON.stringify(backup, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `petitide-master-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Failed to export data');
+    }
+  };
+
   const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = async (e) => {
       const content = e.target?.result as string;
       try {
-        await importPlannerData(content);
+        await importPlannerData(JSON.parse(content));
         await onRefresh();
         alert('Data imported successfully');
       } catch {
         alert('Failed to import data');
+      } finally {
+        input.value = '';
       }
+    };
+    reader.onerror = () => {
+      alert('Failed to import data');
+      input.value = '';
     };
     reader.readAsText(file);
   };
@@ -114,7 +140,7 @@ export function SettingsView({
             <Database className={styles['bento-icon']} aria-hidden />
           </div>
           <div className={styles['action-list']}>
-            <button type="button" className={styles['action-item']} onClick={() => void exportPlannerData()}>
+            <button type="button" className={styles['action-item']} onClick={() => void handleExport()}>
               <div className={styles['action-icon']}><Download aria-hidden /></div>
               <div className={styles['action-text']}>
                 <strong>Export backup</strong>

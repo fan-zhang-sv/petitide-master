@@ -67,7 +67,7 @@ export function Dashboard({
       const nextState = getCycleState(nextChange.plan, nextChange.nextTransitionDate, logs);
       const phaseText = nextState === 'active' ? 'starts active' : 'goes off-cycle';
       nextChangeDetail = `${nextChange.plan.name} ${phaseText}`;
-    } catch (e) {
+    } catch {
       nextChangeValue = nextChange.nextTransitionDate;
       nextChangeDetail = nextChange.plan.name;
     }

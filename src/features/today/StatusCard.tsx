@@ -28,8 +28,8 @@ export function StatusCard({
       site: status.plan.injectionSites[0],
     });
 
-  let statusLabel = '';
-  let metaClass = '';
+  let statusLabel: string;
+  let metaClass: string;
 
   if (status.completed) {
     statusLabel = 'Completed';
@@ -97,4 +97,3 @@ function getCardKind(status: DayPlanStatus) {
   if (status.cycleState === 'off') return 'off';
   return 'on';
 }
-

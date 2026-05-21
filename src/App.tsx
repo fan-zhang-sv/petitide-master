@@ -52,14 +52,12 @@ function AppShell() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (store.loading || !store.settings) {
-      const timer = setTimeout(() => {
-        setLoadingTimeout(true);
-      }, 6000);
-      return () => clearTimeout(timer);
-    } else {
-      setLoadingTimeout(false);
-    }
+    const waitingForStore = store.loading || !store.settings;
+    const timer = setTimeout(() => {
+      setLoadingTimeout(waitingForStore);
+    }, waitingForStore ? 6000 : 0);
+
+    return () => clearTimeout(timer);
   }, [store.loading, store.settings]);
 
   const today = todayIso();

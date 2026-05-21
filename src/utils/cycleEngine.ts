@@ -120,6 +120,9 @@ export function getEffectiveCycleAnchor(
   _logs: InjectionLog[] = [],
   _currentDate = todayIso(),
 ): EffectiveCycleAnchor {
+  void _logs
+  void _currentDate
+
   return {
     cycleStartDate: plan.startDate,
     confidence: 'high',
