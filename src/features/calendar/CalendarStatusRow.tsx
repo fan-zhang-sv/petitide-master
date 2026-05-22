@@ -84,7 +84,7 @@ function getCalendarStatusKind(status: DayPlanStatus) {
   }
   if (status.date > todayIso()) return 'scheduled';
   if (status.date === todayIso()) return 'pending';
-  return 'missed';
+  return status.onTrack ? 'missed' : 'off';
 }
 
 function completionStatusKind(status: DayPlanStatus) {
@@ -93,7 +93,7 @@ function completionStatusKind(status: DayPlanStatus) {
   }
   if (status.date > todayIso()) return 'scheduled';
   if (status.date === todayIso()) return 'pending';
-  return 'missed';
+  return status.onTrack ? 'missed' : 'off';
 }
 
 function completionStatusLabel(status: DayPlanStatus) {
@@ -102,7 +102,7 @@ function completionStatusLabel(status: DayPlanStatus) {
   }
   if (status.date > todayIso()) return 'Scheduled';
   if (status.date === todayIso()) return 'Due Today';
-  return 'Missed';
+  return status.onTrack ? 'Missed' : 'Offtrack';
 }
 
 function getCompletionIcon(status: DayPlanStatus) {
@@ -111,5 +111,5 @@ function getCompletionIcon(status: DayPlanStatus) {
   }
   if (status.date > todayIso()) return <Calendar aria-hidden />;
   if (status.date === todayIso()) return <Clock aria-hidden />;
-  return <X aria-hidden />;
+  return status.onTrack ? <X aria-hidden /> : <Pause aria-hidden />;
 }
