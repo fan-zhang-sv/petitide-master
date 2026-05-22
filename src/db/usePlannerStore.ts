@@ -112,6 +112,14 @@ export function usePlannerStore() {
     [repository],
   )
 
+  const deleteLog = useCallback(
+    async (planId: string, date: string) => {
+      if (!repository) return
+      await repository.deleteLog(planId, date)
+    },
+    [repository],
+  )
+
   // Use stable references for snapshot data to avoid excessive re-renders of downstream effects.
   const plans = useMemo(() => snapshot?.plans ?? [], [snapshot?.plans])
   const logs = useMemo(() => snapshot?.logs ?? [], [snapshot?.logs])
@@ -132,5 +140,6 @@ export function usePlannerStore() {
     updatePlan,
     archivePlan,
     addLog,
+    deleteLog,
   }
 }

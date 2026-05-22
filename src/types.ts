@@ -105,12 +105,9 @@ export interface ReconstitutionResult {
 export interface DayPlanStatus {
   plan: PlannedPeptide
   date: string
-  cycleState: 'upcoming' | 'active' | 'off'
-  due: boolean
-  overdue: boolean
-  completed: boolean
-  skipped: boolean
-  missed: boolean
+  onTrack: boolean // true = scheduled dose day, false = rest/off-cycle day
+  done: boolean    // true = logged as completed or skipped, false = not logged yet
+  log?: InjectionLog
   nextTransitionDate?: string
   scheduleConfidence?: 'high' | 'medium' | 'low'
   scheduleAnchorDate?: string

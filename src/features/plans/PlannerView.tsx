@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import type { PlannedPeptide, InjectionLog } from '../../types';
 import { todayIso } from '../../utils/dates';
-import { getDayPlanStatus, frequencyLabel, cycleLabel } from '../../utils/cycleEngine';
+import { getDayPlanStatus, frequencyLabel, cycleLabel, getCycleState } from '../../utils/cycleEngine';
 import { analyzeCycleReview } from '../../utils/cycleReview';
 import { formatNumber } from '../../utils/reconstitution';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -56,25 +56,45 @@ export function PlannerView({
       {plans.map((plan, index) => {
         const status = getDayPlanStatus(plan, logs, todayIso());
         const review = analyzeCycleReview(plan, logs);
-        const CycleIcon = status.cycleState === 'active' ? Power : status.cycleState === 'off' ? Pause : Clock;
-        const TodayIcon = status.completed ? Check : status.skipped ? X : status.due ? X : CalendarClock;
+        const cycleState = getCycleState(plan, todayIso(), logs);
+        const CycleIcon = cycleState === 'active' ? Power : cycleState === 'off' ? Pause : Clock;
+
+        let TodayIcon = CalendarClock;
+        let todayLabel = 'Not due';
+        let todayTone: 'done' | 'not-done' | 'neutral' = 'neutral';
+
+        if (status.done) {
+          if (status.log?.status === 'skipped') {
+            TodayIcon = X;
+            todayLabel = 'Skipped';
+            todayTone = 'neutral';
+          } else {
+            TodayIcon = Check;
+            todayLabel = 'Done';
+            todayTone = 'done';
+          }
+        } else if (status.onTrack) {
+          TodayIcon = X;
+          todayLabel = 'Due';
+          todayTone = 'not-done';
+        }
+
         const ReviewIcon =
           review.level === 'clear'
             ? CheckCircle2
             : review.level === 'watch'
               ? Info
               : AlertCircle;
-        const todayLabel = status.completed ? 'Done' : status.skipped ? 'Not done' : status.due ? 'Due' : 'Not due';
         const cycleLabelText =
-          status.cycleState === 'active' ? 'On cycle' : status.cycleState === 'off' ? 'Off cycle' : 'Upcoming';
+          cycleState === 'active' ? 'On cycle' : cycleState === 'off' ? 'Off cycle' : 'Upcoming';
 
         return (
           <article
             key={plan.id}
             className={cx(
               styles['catalog-row'],
-              styles[status.cycleState],
-              status.due && !status.completed && styles.due,
+              styles[cycleState],
+              status.onTrack && !status.done && styles.due,
             )}
             style={{ animationDelay: `${index * 35}ms` }}
             aria-label={`${plan.name}, ${cycleLabelText}, ${todayLabel} today`}
@@ -95,7 +115,7 @@ export function PlannerView({
                     )}
                   </p>
                 </div>
-                <Pill tone={status.cycleState === 'active' ? 'on' : status.cycleState === 'off' ? 'off' : 'neutral'}>
+                <Pill tone={cycleState === 'active' ? 'on' : cycleState === 'off' ? 'off' : 'neutral'}>
                   <CycleIcon aria-hidden />
                   {cycleLabelText}
                 </Pill>
@@ -121,7 +141,7 @@ export function PlannerView({
                 <div>
                   <dt>Today</dt>
                   <dd>
-                    <StatusLabel tone={status.completed ? 'done' : status.skipped || status.due ? 'not-done' : 'neutral'}>
+                    <StatusLabel tone={todayTone}>
                       <TodayIcon aria-hidden />
                       {todayLabel}
                     </StatusLabel>

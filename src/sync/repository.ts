@@ -15,4 +15,5 @@ export interface PlannerRepository {
   updatePlan(id: string, patch: Partial<PlannedPeptide>): Promise<void>
   archivePlan(id: string): Promise<void>
   addLog(log: Omit<InjectionLog, 'id' | 'createdAt'>): Promise<void>
+  deleteLog(planId: string, date: string): Promise<void>
 }

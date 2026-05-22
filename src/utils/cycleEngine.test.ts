@@ -47,8 +47,8 @@ describe('cycle engine', () => {
   it('marks missed and completed log states without changing the protocol', () => {
     const subject = plan()
     const missed = getDayPlanStatus(subject, [], '2026-05-02', '2026-05-03')
-    expect(missed.missed).toBe(true)
-    expect(missed.overdue).toBe(true)
+    expect(missed.onTrack).toBe(true)
+    expect(missed.done).toBe(false)
 
     const completed = getDayPlanStatus(
       subject,
@@ -64,8 +64,8 @@ describe('cycle engine', () => {
       '2026-05-02',
       '2026-05-03',
     )
-    expect(completed.completed).toBe(true)
-    expect(completed.missed).toBe(false)
+    expect(completed.onTrack).toBe(true)
+    expect(completed.done).toBe(true)
   })
 
   it('calculates adherence from past due days and logs', () => {

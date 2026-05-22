@@ -1,4 +1,5 @@
 import type { DayPlanStatus } from '../types'
+import { todayIso } from '../utils/dates'
 
 export function notificationsSupported() {
   return 'Notification' in window
@@ -16,7 +17,8 @@ export function sendDueNotification(items: DayPlanStatus[]) {
     return
   }
 
-  const due = items.filter((item) => item.overdue)
+  const today = todayIso()
+  const due = items.filter((item) => item.onTrack && !item.done && item.date <= today)
   if (due.length === 0) {
     return
   }

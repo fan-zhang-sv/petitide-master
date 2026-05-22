@@ -16,6 +16,7 @@ interface DashboardProps {
   logs: InjectionLog[];
   todayStatuses: DayPlanStatus[];
   onLog: (log: Omit<InjectionLog, 'id' | 'createdAt'>) => Promise<void>;
+  onDeleteLog: (planId: string, date: string) => Promise<void>;
   onOpenCatalog: () => void;
 }
 
@@ -24,18 +25,17 @@ export function Dashboard({
   logs,
   todayStatuses,
   onLog,
+  onDeleteLog,
   onOpenCatalog,
 }: DashboardProps) {
   const today = todayIso();
-  const dueToday = todayStatuses.filter((status) => status.due);
-  const completedToday = todayStatuses.filter((status) => status.completed || status.skipped);
+  const dueToday = todayStatuses.filter((status) => status.onTrack);
+  const completedToday = todayStatuses.filter((status) => status.done);
   const actionItems = dueToday.filter(
-    (status) => !status.completed && !status.skipped
+    (status) => !status.done
   );
-  const actionKeys = new Set(actionItems.map((status) => `${status.plan.id}:${status.date}`));
-  const completedKeys = new Set(completedToday.map((status) => `${status.plan.id}:${status.date}`));
   const offCycleToday = todayStatuses.filter(
-    (status) => status.cycleState === 'off' && !actionKeys.has(`${status.plan.id}:${status.date}`) && !completedKeys.has(`${status.plan.id}:${status.date}`),
+    (status) => !status.onTrack && !status.done
   );
   const adherence = getAdherence(plans, logs, today);
   const totalToday = actionItems.length + completedToday.length;
@@ -47,7 +47,7 @@ export function Dashboard({
       ? 'All logged for today!'
       : 'No scheduled items today';
 
-  const onCycleToday = todayStatuses.filter((status) => status.cycleState === 'active').length;
+  const onCycleToday = todayStatuses.filter((status) => getCycleState(status.plan, status.date, logs) === 'active').length;
   const offCycleCount = plans.length - onCycleToday;
   const activeValue = `${onCycleToday}/${plans.length}`;
   const activeDetail = offCycleCount > 0
@@ -130,6 +130,7 @@ export function Dashboard({
                   status={status}
                   logs={logs}
                   onLog={onLog}
+                  onDeleteLog={onDeleteLog}
                 />
               ))}
             </div>
@@ -151,6 +152,7 @@ export function Dashboard({
                   status={status}
                   logs={logs}
                   onLog={onLog}
+                  onDeleteLog={onDeleteLog}
                 />
               ))}
             </div>
@@ -167,6 +169,7 @@ export function Dashboard({
                   status={status}
                   logs={logs}
                   onLog={onLog}
+                  onDeleteLog={onDeleteLog}
                 />
               ))}
             </div>

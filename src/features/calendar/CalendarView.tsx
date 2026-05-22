@@ -11,7 +11,7 @@ import {
   todayIso,
   toMonthKey,
 } from '../../utils/dates';
-import { getStatusesForDate } from '../../utils/cycleEngine';
+import { getStatusesForDate, getCycleState } from '../../utils/cycleEngine';
 import { Button } from '../../components/ui/Button';
 import { Screen } from '../../components/ui/Screen';
 import { SectionHeader } from '../../components/ui/Header';
@@ -23,9 +23,10 @@ interface CalendarViewProps {
   plans: PlannedPeptide[];
   logs: InjectionLog[];
   onLog: (log: Omit<InjectionLog, 'id' | 'createdAt'>) => Promise<void>;
+  onDeleteLog: (planId: string, date: string) => Promise<void>;
 }
 
-export function CalendarView({ plans, logs, onLog }: CalendarViewProps) {
+export function CalendarView({ plans, logs, onLog, onDeleteLog }: CalendarViewProps) {
   const [selectedMonth, setSelectedMonth] = useState(toMonthKey());
   const [selectedDate, setSelectedDate] = useState(todayIso());
 
@@ -140,6 +141,7 @@ export function CalendarView({ plans, logs, onLog }: CalendarViewProps) {
                   key={`${selectedDate}-${status.plan.id}`}
                   status={status}
                   onLog={onLog}
+                  onDeleteLog={onDeleteLog}
                 />
               ))
             )}
@@ -151,15 +153,15 @@ export function CalendarView({ plans, logs, onLog }: CalendarViewProps) {
 }
 
 function summarizeDay(statuses: ReturnType<typeof getStatusesForDate>, date: string, currentDate = todayIso()) {
-  const completed = statuses.filter((status) => status.completed).length;
-  const skipped = statuses.filter((status) => status.skipped).length;
+  const completed = statuses.filter((status) => status.done && status.log?.status === 'completed').length;
+  const skipped = statuses.filter((status) => status.done && status.log?.status === 'skipped').length;
 
   let notDone = 0;   // past missed
   let pending = 0;   // today's uncompleted
   let scheduled = 0; // future uncompleted
 
   statuses.forEach((status) => {
-    if (status.due && !status.completed && !status.skipped) {
+    if (!status.done && status.onTrack) {
       if (date < currentDate) {
         notDone += 1;
       } else if (date === currentDate) {
@@ -170,8 +172,8 @@ function summarizeDay(statuses: ReturnType<typeof getStatusesForDate>, date: str
     }
   });
 
-  const off = statuses.filter((status) => status.cycleState !== 'active').length;
-  const on = statuses.filter((status) => status.cycleState === 'active').length;
+  const off = statuses.filter((status) => getCycleState(status.plan, date) !== 'active').length;
+  const on = statuses.length - off;
 
   return { completed, skipped, notDone, pending, scheduled, off, on };
 }

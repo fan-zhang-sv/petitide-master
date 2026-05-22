@@ -165,6 +165,7 @@ function AppShell() {
             logs={store.logs}
             todayStatuses={todayStatuses}
             onLog={store.addLog}
+            onDeleteLog={store.deleteLog}
             onOpenCatalog={() => setActiveTab('plans')}
           />
         )}
@@ -182,6 +183,7 @@ function AppShell() {
             plans={store.activePlans}
             logs={store.logs}
             onLog={store.addLog}
+            onDeleteLog={store.deleteLog}
           />
         )}
         {activeTab === 'settings' && (

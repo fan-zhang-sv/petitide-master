@@ -1,7 +1,7 @@
 import type { DayPlanStatus, FrequencyConfig, InjectionLog, PlannedPeptide } from '../types'
-import { addIsoDays, daysBetween, isPastDate, todayIso } from './dates'
+import { addIsoDays, daysBetween, todayIso } from './dates'
 
-type CycleState = DayPlanStatus['cycleState']
+export type CycleState = 'upcoming' | 'active' | 'off'
 
 interface EffectiveCycleAnchor {
   cycleStartDate: string
@@ -137,23 +137,15 @@ export function getDayPlanStatus(
   currentDate = todayIso(),
 ): DayPlanStatus {
   const anchor = getEffectiveCycleAnchor(plan, logs, currentDate)
-  const cycleState = getCycleStateFromAnchor(plan, date, anchor.cycleStartDate)
   const due = isDueByFrequency(plan, date, logs, currentDate)
   const log = getLogForPlanDate(logs, plan.id, date)
-  const completed = log?.status === 'completed'
-  const skipped = log?.status === 'skipped'
-  const missed = due && !log && isPastDate(date, currentDate)
-  const overdue = due && !log && date <= currentDate
 
   return {
     plan,
     date,
-    cycleState,
-    due,
-    overdue,
-    completed,
-    skipped,
-    missed,
+    onTrack: due,
+    done: !!log,
+    log,
     nextTransitionDate: getNextTransitionDateFromAnchor(plan, date, anchor.cycleStartDate),
     scheduleConfidence: anchor.confidence,
     scheduleAnchorDate: anchor.cycleStartDate,
@@ -179,14 +171,16 @@ export function getAdherence(plans: PlannedPeptide[], logs: InjectionLog[], curr
     for (let offset = 0; offset < elapsed; offset += 1) {
       const date = addIsoDays(plan.startDate, offset)
       const status = getDayPlanStatus(plan, logs, date, currentDate)
-      if (status.completed) {
-        completed += 1
-      }
-      if (status.skipped) {
-        skipped += 1
-      }
-      if (status.missed) {
-        missed += 1
+      if (status.onTrack) {
+        if (status.done) {
+          if (status.log?.status === 'skipped') {
+            skipped += 1
+          } else {
+            completed += 1
+          }
+        } else {
+          missed += 1
+        }
       }
     }
   })

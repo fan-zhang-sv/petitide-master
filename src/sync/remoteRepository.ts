@@ -231,4 +231,15 @@ export class RemoteRepository implements PlannerRepository {
     }
     await setDoc(this.userDoc('logs', nextLog.id), { ...nextLog, schemaVersion: 1 })
   }
+
+  async deleteLog(planId: string, date: string): Promise<void> {
+    const dupSnap = await getDocs(
+      query(
+        this.userCollection('logs'),
+        where('planId', '==', planId),
+        where('date', '==', date),
+      ),
+    )
+    await Promise.all(dupSnap.docs.map((d) => deleteDoc(d.ref)))
+  }
 }

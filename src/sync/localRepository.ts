@@ -122,4 +122,16 @@ export class LocalRepository implements PlannerRepository {
     })
     await this.notify()
   }
+
+  async deleteLog(planId: string, date: string): Promise<void> {
+    await db.logs
+      .where('[planId+date]')
+      .equals([planId, date])
+      .delete()
+      .catch(async () => {
+        const duplicates = await db.logs.where({ planId, date }).toArray()
+        await db.logs.bulkDelete(duplicates.map((duplicate) => duplicate.id))
+      })
+    await this.notify()
+  }
 }
