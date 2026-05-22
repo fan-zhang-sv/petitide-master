@@ -127,7 +127,7 @@
 
 @media (min-width: 640px) {
   .app-shell {
-    padding: 18px 18px calc(104px + env(safe-area-inset-bottom, 0px));
+    padding: 12px 12px calc(70px + env(safe-area-inset-bottom, 0px));
   }
 
   .today-hero {
@@ -199,9 +199,9 @@
   .app-shell:not(.centered) {
     display: grid;
     grid-template-columns: 80px minmax(0, 1fr);
-    gap: 28px;
+    gap: 20px;
     align-items: start;
-    padding: 24px 28px;
+    padding: 16px 24px;
   }
 
   .topbar,
@@ -211,7 +211,7 @@
 
   .desktop-sidebar {
     position: sticky;
-    top: 32px;
+    top: 16px;
     display: flex;
     flex-direction: column;
   }
@@ -243,8 +243,8 @@
 @media (min-width: 1024px) {
   .app-shell:not(.centered) {
     grid-template-columns: 240px minmax(0, 1fr);
-    gap: 32px;
-    padding: 24px 32px;
+    gap: 20px;
+    padding: 16px 24px;
   }
 
   .brand-text,

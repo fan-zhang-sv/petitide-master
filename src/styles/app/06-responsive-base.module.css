@@ -1,6 +1,6 @@
 @media (max-width: 380px) {
   .app-shell {
-    padding: 12px 14px 96px;
+    padding: 12px 14px 80px;
   }
 
   .tabbar {
@@ -45,7 +45,7 @@
 }
 
 .app-content {
-  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 
 @media (min-width: 768px) {
@@ -55,7 +55,7 @@
 }
 
 .screen {
-  padding: 12px 0 32px;
+  padding: 6px 0 16px;
 }
 
 .desktop-sidebar {
@@ -66,7 +66,7 @@
   position: sticky;
   top: 0;
   z-index: 25;
-  padding: 8px 0 10px;
+  padding: 4px 0 6px;
   background: rgba(247, 243, 234, 0.96);
   backdrop-filter: blur(16px);
 }

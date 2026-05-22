@@ -55,8 +55,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  margin: 24px 0;
+  padding: 8px 12px;
+  margin: 12px 0;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -76,7 +76,7 @@
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   align-items: end;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 /* Removed .toolbar grid-template-columns, using auto-fit in .filter-bar */
@@ -228,8 +228,8 @@
 .sub-header {
   display: flex;
   align-items: center;
-  padding: 8px 0 16px;
-  margin-bottom: 24px;
+  padding: 4px 0 8px;
+  margin-bottom: 12px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -255,14 +255,14 @@
 .menu-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
+  gap: 12px;
+  padding: 10px 12px;
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--line);
   border-radius: 0;
   text-align: left;
-  min-height: 72px;
+  min-height: 52px;
   color: var(--ink);
   transition: background var(--duration-fast) var(--ease-clinical);
 }
@@ -282,9 +282,9 @@
 .menu-icon {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   background: var(--field);
   color: var(--ink);
   flex-shrink: 0;

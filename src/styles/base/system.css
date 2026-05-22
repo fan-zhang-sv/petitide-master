@@ -17,16 +17,16 @@
   --line-height-base: 1.45;
 
   /* Spacing Scale */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-base: 12px;
-  --space-md: 16px;
-  --space-lg: 20px;
+  --space-xs: 2px;
+  --space-sm: 4px;
+  --space-base: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
   
   /* Layout Primitives */
   --grid-gap: var(--space-base);
   --panel-padding: var(--space-base);
-  --row-padding: 10px var(--space-base);
+  --row-padding: 6px var(--space-base);
 }
 
 /* System Components */
