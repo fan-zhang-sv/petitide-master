@@ -17,21 +17,54 @@
   background: var(--status-done-bg);
 }
 
-.calendar-status-row.done .status-label {
+.calendar-status-row.done .status-label,
+.status-label.done {
   background: var(--status-done);
   color: #fff;
 }
 
-.calendar-status-row.missed,
-.calendar-status-row.skipped {
+.calendar-status-row.missed {
   border-left-color: var(--status-missed);
   background: var(--status-missed-bg);
 }
 
 .calendar-status-row.missed .status-label,
-.calendar-status-row.skipped .status-label {
+.status-label.missed {
   background: var(--status-missed);
   color: #fff;
+}
+
+.calendar-status-row.skipped {
+  border-left-color: var(--line);
+  background: var(--field);
+}
+
+.calendar-status-row.skipped .status-label,
+.status-label.skipped {
+  background: var(--muted);
+  color: #fff;
+}
+
+.calendar-status-row.scheduled {
+  border-left-color: var(--line);
+  background: var(--field);
+}
+
+.calendar-status-row.scheduled .status-label,
+.status-label.scheduled {
+  background: var(--muted);
+  color: #fff;
+}
+
+.calendar-status-row.pending {
+  border-left-color: var(--amber);
+  background: #fdfaf3;
+}
+
+.calendar-status-row.pending .status-label,
+.status-label.pending {
+  background: var(--amber);
+  color: var(--ink);
 }
 
 .calendar-status-row.on {

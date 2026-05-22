@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Check, ChevronLeft, ChevronRight, Pause, Power, RotateCcw, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Pause, Power, RotateCcw, X, Calendar, Clock, SkipForward } from 'lucide-react';
 import type { PlannedPeptide, InjectionLog } from '../../types';
 import {
   getPaddedMonthDates,
@@ -84,7 +84,7 @@ export function CalendarView({ plans, logs, onLog }: CalendarViewProps) {
             {dates.map((date) => {
               const statuses = getStatusesForDate(plans, logs, date);
               const outsideMonth = date < monthStart || date > monthEnd;
-              const summary = summarizeDay(statuses);
+              const summary = summarizeDay(statuses, date);
               const dayMetrics = getDayMetrics(summary);
 
               return (
@@ -150,19 +150,39 @@ export function CalendarView({ plans, logs, onLog }: CalendarViewProps) {
   );
 }
 
-function summarizeDay(statuses: ReturnType<typeof getStatusesForDate>) {
+function summarizeDay(statuses: ReturnType<typeof getStatusesForDate>, date: string, currentDate = todayIso()) {
   const completed = statuses.filter((status) => status.completed).length;
-  const notDone = statuses.filter((status) => status.due && !status.completed).length;
+  const skipped = statuses.filter((status) => status.skipped).length;
+
+  let notDone = 0;   // past missed
+  let pending = 0;   // today's uncompleted
+  let scheduled = 0; // future uncompleted
+
+  statuses.forEach((status) => {
+    if (status.due && !status.completed && !status.skipped) {
+      if (date < currentDate) {
+        notDone += 1;
+      } else if (date === currentDate) {
+        pending += 1;
+      } else {
+        scheduled += 1;
+      }
+    }
+  });
+
   const off = statuses.filter((status) => status.cycleState !== 'active').length;
   const on = statuses.filter((status) => status.cycleState === 'active').length;
 
-  return { completed, notDone, off, on };
+  return { completed, skipped, notDone, pending, scheduled, off, on };
 }
 
 function getDayMetrics(summary: ReturnType<typeof summarizeDay>) {
   const completion = [
-    summary.notDone ? { kind: 'not-done', count: summary.notDone, label: `${summary.notDone} not done` } : null,
+    summary.notDone ? { kind: 'not-done', count: summary.notDone, label: `${summary.notDone} missed` } : null,
     summary.completed ? { kind: 'done', count: summary.completed, label: `${summary.completed} done` } : null,
+    summary.skipped ? { kind: 'skipped', count: summary.skipped, label: `${summary.skipped} skipped` } : null,
+    summary.pending ? { kind: 'pending', count: summary.pending, label: `${summary.pending} pending` } : null,
+    summary.scheduled ? { kind: 'scheduled', count: summary.scheduled, label: `${summary.scheduled} scheduled` } : null,
   ].filter((chip): chip is DayMetric => chip !== null);
 
   if (completion.length > 0) {
@@ -176,7 +196,7 @@ function getDayMetrics(summary: ReturnType<typeof summarizeDay>) {
 }
 
 type DayMetric = {
-  kind: 'done' | 'not-done' | 'on' | 'off';
+  kind: 'done' | 'not-done' | 'skipped' | 'pending' | 'scheduled' | 'on' | 'off';
   count: number;
   label: string;
 };
@@ -184,6 +204,9 @@ type DayMetric = {
 function DayMetricIcon({ kind }: { kind: DayMetric['kind'] }) {
   if (kind === 'done') return <Check aria-hidden />;
   if (kind === 'not-done') return <X aria-hidden />;
+  if (kind === 'skipped') return <SkipForward aria-hidden />;
+  if (kind === 'pending') return <Clock aria-hidden />;
+  if (kind === 'scheduled') return <Calendar aria-hidden />;
   if (kind === 'off') return <Pause aria-hidden />;
   return <Power aria-hidden />;
 }
@@ -198,7 +221,10 @@ function getCycleClass(summary: ReturnType<typeof summarizeDay>) {
 function daySummaryLabel(summary: ReturnType<typeof summarizeDay>) {
   const parts = [
     summary.completed ? `${summary.completed} done` : '',
-    summary.notDone ? `${summary.notDone} not done` : '',
+    summary.skipped ? `${summary.skipped} skipped` : '',
+    summary.notDone ? `${summary.notDone} missed` : '',
+    summary.pending ? `${summary.pending} pending` : '',
+    summary.scheduled ? `${summary.scheduled} scheduled` : '',
     summary.on ? `${summary.on} on cycle` : '',
     summary.off ? `${summary.off} off cycle` : '',
   ].filter(Boolean);

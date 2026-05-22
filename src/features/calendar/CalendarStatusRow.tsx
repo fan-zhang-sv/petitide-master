@@ -1,4 +1,4 @@
-import { Check, Pause, Power, SkipForward, X } from 'lucide-react';
+import { Check, Pause, Power, SkipForward, X, Calendar, Clock } from 'lucide-react';
 import type { DayPlanStatus, InjectionLog } from '../../types';
 import { todayIso } from '../../utils/dates';
 import { Button } from '../../components/ui/Button';
@@ -67,7 +67,7 @@ export function CalendarStatusRow({
             {cycleStatusLabel(status)}
           </StatusLabel>
           <StatusLabel tone={completionStatusKind(status)}>
-            {status.completed ? <Check aria-hidden /> : <X aria-hidden />}
+            {getCompletionIcon(status)}
             {completionStatusLabel(status)}
           </StatusLabel>
         </div>
@@ -80,9 +80,10 @@ export function CalendarStatusRow({
 
 function getCalendarStatusKind(status: DayPlanStatus) {
   if (status.completed) return 'done';
-  if (status.due || status.skipped) return 'not-done';
-  if (status.cycleState !== 'active') return 'off';
-  return 'on';
+  if (status.skipped) return 'skipped';
+  if (status.date > todayIso()) return 'scheduled';
+  if (status.date === todayIso()) return 'pending';
+  return 'missed';
 }
 
 function cycleStatusKind(status: DayPlanStatus) {
@@ -94,9 +95,25 @@ function cycleStatusLabel(status: DayPlanStatus) {
 }
 
 function completionStatusKind(status: DayPlanStatus) {
-  return status.completed ? 'done' : 'not-done';
+  if (status.completed) return 'done';
+  if (status.skipped) return 'skipped';
+  if (status.date > todayIso()) return 'scheduled';
+  if (status.date === todayIso()) return 'pending';
+  return 'missed';
 }
 
 function completionStatusLabel(status: DayPlanStatus) {
-  return status.completed ? 'Done' : 'Not done';
+  if (status.completed) return 'Done';
+  if (status.skipped) return 'Skipped';
+  if (status.date > todayIso()) return 'Scheduled';
+  if (status.date === todayIso()) return 'Due Today';
+  return 'Missed';
+}
+
+function getCompletionIcon(status: DayPlanStatus) {
+  if (status.completed) return <Check aria-hidden />;
+  if (status.skipped) return <SkipForward aria-hidden />;
+  if (status.date > todayIso()) return <Calendar aria-hidden />;
+  if (status.date === todayIso()) return <Clock aria-hidden />;
+  return <X aria-hidden />;
 }

@@ -149,10 +149,13 @@
 }
 
 .day-cell .day-status-chip.due { border-color: var(--status-due); color: var(--status-due); background: var(--status-due-bg); }
-.day-cell .day-status-chip.not-done { border-color: var(--status-due); color: var(--status-due); background: var(--status-due-bg); }
+.day-cell .day-status-chip.not-done { border-color: var(--status-missed); color: var(--status-missed); background: var(--status-missed-bg); }
 .day-cell .day-status-chip.done { border-color: var(--status-done); color: var(--status-done); background: var(--status-done-bg); }
 .day-cell .day-status-chip.on { border-color: var(--status-on); color: var(--status-on); background: var(--status-on-bg); }
 .day-cell .day-status-chip.off { border-color: var(--status-off); color: var(--status-off); background: var(--status-off-bg); }
+.day-cell .day-status-chip.scheduled { border-color: var(--line); color: var(--muted); background: var(--field); }
+.day-cell .day-status-chip.pending { border-color: var(--amber); color: var(--ink); background: #fdfaf3; }
+.day-cell .day-status-chip.skipped { border-color: var(--line); color: var(--muted); background: var(--field); }
 
 /* Selected Day Panel */
 .selected-day-panel {
