@@ -195,7 +195,8 @@
 .dialog {
   width: min(780px, 100%);
   max-height: min(840px, 92svh);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 18px;
   animation: dialogSlideUp var(--duration-normal) var(--ease-clinical);
 }
