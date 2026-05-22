@@ -66,7 +66,7 @@ export function CalendarStatusRow({
           {showCycleActiveBadge && (
             <StatusLabel tone={cycleActive ? 'on' : 'off'}>
               {cycleActive ? <Power aria-hidden /> : <Pause aria-hidden />}
-              {cycleActive ? 'On' : 'Off'}
+              {cycleActive ? 'Ontrack' : 'Off'}
             </StatusLabel>
           )}
           <StatusLabel tone={completionStatusKind(status)}>
