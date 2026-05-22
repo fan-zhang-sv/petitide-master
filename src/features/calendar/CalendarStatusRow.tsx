@@ -21,6 +21,7 @@ export function CalendarStatusRow({
   const statusKind = getCalendarStatusKind(status);
   const cycleActive = getCycleState(status.plan, status.date) === 'active';
   const canOverridePast = status.date <= todayIso() && getCycleState(status.plan, status.date) !== 'upcoming';
+  const showCycleActiveBadge = cycleActive || completionStatusLabel(status) !== 'Offtrack';
 
   const showDoneButton = !status.done && canOverridePast;
   const showUndoButton = status.done;
@@ -62,10 +63,12 @@ export function CalendarStatusRow({
     <div className={cx(styles['calendar-status-row'], styles[statusKind])}>
       <div className={styles['calendar-status-main']}>
         <div className={styles['calendar-status-badges']}>
-          <StatusLabel tone={cycleActive ? 'on' : 'off'}>
-            {cycleActive ? <Power aria-hidden /> : <Pause aria-hidden />}
-            {cycleActive ? 'On' : 'Off'}
-          </StatusLabel>
+          {showCycleActiveBadge && (
+            <StatusLabel tone={cycleActive ? 'on' : 'off'}>
+              {cycleActive ? <Power aria-hidden /> : <Pause aria-hidden />}
+              {cycleActive ? 'On' : 'Off'}
+            </StatusLabel>
+          )}
           <StatusLabel tone={completionStatusKind(status)}>
             {getCompletionIcon(status)}
             {completionStatusLabel(status)}
@@ -91,8 +94,14 @@ function completionStatusKind(status: DayPlanStatus) {
   if (status.done) {
     return status.log?.status === 'skipped' ? 'skipped' : 'done';
   }
+  const cycleActive = getCycleState(status.plan, status.date) === 'active';
+  if (!cycleActive) {
+    return 'off';
+  }
   if (status.date > todayIso()) return 'scheduled';
-  if (status.date === todayIso()) return 'pending';
+  if (status.date === todayIso()) {
+    return status.onTrack ? 'pending' : 'off';
+  }
   return status.onTrack ? 'missed' : 'off';
 }
 
@@ -100,8 +109,14 @@ function completionStatusLabel(status: DayPlanStatus) {
   if (status.done) {
     return status.log?.status === 'skipped' ? 'Skipped' : 'Done';
   }
+  const cycleActive = getCycleState(status.plan, status.date) === 'active';
+  if (!cycleActive) {
+    return 'Offtrack';
+  }
   if (status.date > todayIso()) return 'Scheduled';
-  if (status.date === todayIso()) return 'Due Today';
+  if (status.date === todayIso()) {
+    return status.onTrack ? 'Due Today' : 'Offtrack';
+  }
   return status.onTrack ? 'Missed' : 'Offtrack';
 }
 
@@ -109,7 +124,13 @@ function getCompletionIcon(status: DayPlanStatus) {
   if (status.done) {
     return status.log?.status === 'skipped' ? <SkipForward aria-hidden /> : <Check aria-hidden />;
   }
+  const cycleActive = getCycleState(status.plan, status.date) === 'active';
+  if (!cycleActive) {
+    return <Pause aria-hidden />;
+  }
   if (status.date > todayIso()) return <Calendar aria-hidden />;
-  if (status.date === todayIso()) return <Clock aria-hidden />;
+  if (status.date === todayIso()) {
+    return status.onTrack ? <Clock aria-hidden /> : <Pause aria-hidden />;
+  }
   return status.onTrack ? <X aria-hidden /> : <Pause aria-hidden />;
 }
