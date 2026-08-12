@@ -21,6 +21,7 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         start_url: base,
+        scope: base,
         icons: [
           {
             src: 'pwa-icon.svg',
