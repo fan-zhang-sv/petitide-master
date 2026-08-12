@@ -6,9 +6,12 @@
     "petitide-master": {
       "hosting": {
         "production": [
+          "peptide-master"
+        ],
+        "legacy-peptitide": [
           "peptitide-master"
         ],
-        "legacy": [
+        "legacy-petitide": [
           "petitide-master"
         ]
       }

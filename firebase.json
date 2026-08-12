@@ -19,7 +19,22 @@
       ]
     },
     {
-      "target": "legacy",
+      "target": "legacy-peptitide",
+      "public": "dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "legacy-petitide",
       "public": "dist",
       "ignore": [
         "firebase.json",

@@ -15,7 +15,7 @@ export function Sidebar({ activeTab, tabs, onTabChange }: SidebarProps) {
         <div className={styles['brand-logo']}>PM</div>
         <div className={styles['brand-text']}>
           <Eyebrow>Local-first PWA</Eyebrow>
-          <h1>Peptitide Master</h1>
+          <h1>Peptide Master</h1>
         </div>
       </header>
       <nav className={styles['sidebar-nav']} aria-label="Desktop Primary">

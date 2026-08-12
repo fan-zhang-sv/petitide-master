@@ -102,7 +102,7 @@ export function SupportSection() {
       <div className={styles['support-note']}>
         <Coffee aria-hidden />
         <div className={styles['support-note-text']}>
-          <strong>If Peptitide saves you time</strong>
+          <strong>If Peptide saves you time</strong>
           <p>A small tip keeps development moving. Pick whichever's easiest.</p>
         </div>
       </div>

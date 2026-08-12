@@ -62,7 +62,7 @@ describe('SettingsView', () => {
 
     await waitFor(() => expect(HTMLAnchorElement.prototype.click).toHaveBeenCalled());
     expect(exportPlannerData).toHaveBeenCalledTimes(1);
-    expect(clickedDownload).toMatch(/^peptitide-master-backup-\d{4}-\d{2}-\d{2}\.json$/);
+    expect(clickedDownload).toMatch(/^peptide-master-backup-\d{4}-\d{2}-\d{2}\.json$/);
     expect(clickedHref).toBe('blob:backup');
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:backup');
 

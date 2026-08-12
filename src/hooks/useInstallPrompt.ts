@@ -12,37 +12,49 @@ export type InstallPlatform =
   | 'android-instructions'
   | 'none';
 
-const DISMISS_KEY = 'peptitide:install-prompt:dismissed-at';
-const INSTALLED_KEY = 'peptitide:install-prompt:installed';
+const DISMISS_KEY = 'peptide:install-prompt:dismissed-at';
+const INSTALLED_KEY = 'peptide:install-prompt:installed';
 // Keep these only as migration sources for people who used the app before the
 // brand spelling was corrected.
-const LEGACY_DISMISS_KEY = 'petitide:install-prompt:dismissed-at';
-const LEGACY_INSTALLED_KEY = 'petitide:install-prompt:installed';
+const LEGACY_DISMISS_KEYS = [
+  'peptitide:install-prompt:dismissed-at',
+  'petitide:install-prompt:dismissed-at',
+];
+const LEGACY_INSTALLED_KEYS = [
+  'peptitide:install-prompt:installed',
+  'petitide:install-prompt:installed',
+];
 const DISMISS_COOLDOWN_MS = 14 * 24 * 60 * 60 * 1000;
 
-function safeRead(key: string, legacyKey: string): string | null {
+function safeRead(key: string, legacyKeys: string[]): string | null {
   try {
     const current = localStorage.getItem(key);
-    if (current !== null) return current;
-
-    const legacy = localStorage.getItem(legacyKey);
-    if (legacy !== null) {
-      localStorage.setItem(key, legacy);
-      localStorage.removeItem(legacyKey);
+    if (current !== null) {
+      legacyKeys.forEach((legacyKey) => localStorage.removeItem(legacyKey));
+      return current;
     }
-    return legacy;
+
+    for (const legacyKey of legacyKeys) {
+      const legacy = localStorage.getItem(legacyKey);
+      if (legacy !== null) {
+        localStorage.setItem(key, legacy);
+        legacyKeys.forEach((keyToRemove) => localStorage.removeItem(keyToRemove));
+        return legacy;
+      }
+    }
+    return null;
   } catch {
     return null;
   }
 }
 
-function safeReadNumber(key: string, legacyKey: string): number {
-  const value = safeRead(key, legacyKey);
+function safeReadNumber(key: string, legacyKeys: string[]): number {
+  const value = safeRead(key, legacyKeys);
   return value ? Number(value) || 0 : 0;
 }
 
-function safeReadBool(key: string, legacyKey: string): boolean {
-  return safeRead(key, legacyKey) === '1';
+function safeReadBool(key: string, legacyKeys: string[]): boolean {
+  return safeRead(key, legacyKeys) === '1';
 }
 
 function safeWrite(key: string, value: string) {
@@ -83,10 +95,10 @@ export interface InstallPromptState {
 export function useInstallPrompt(): InstallPromptState {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState<boolean>(() =>
-    safeReadBool(INSTALLED_KEY, LEGACY_INSTALLED_KEY),
+    safeReadBool(INSTALLED_KEY, LEGACY_INSTALLED_KEYS),
   );
   const [dismissedAt, setDismissedAt] = useState<number>(() =>
-    safeReadNumber(DISMISS_KEY, LEGACY_DISMISS_KEY),
+    safeReadNumber(DISMISS_KEY, LEGACY_DISMISS_KEYS),
   );
   const [standalone, setStandalone] = useState<boolean>(() => detectStandalone());
   // Capture mount time once so the cooldown check stays pure across renders.

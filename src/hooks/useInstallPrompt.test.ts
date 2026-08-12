@@ -7,21 +7,27 @@ describe('useInstallPrompt storage migration', () => {
     localStorage.clear();
   });
 
-  it('moves legacy install state to the corrected storage namespace', () => {
-    localStorage.setItem('petitide:install-prompt:installed', '1');
+  it.each(['peptitide', 'petitide'])(
+    'moves %s install state to the corrected storage namespace',
+    (legacyNamespace) => {
+      localStorage.setItem(`${legacyNamespace}:install-prompt:installed`, '1');
 
-    renderHook(() => useInstallPrompt());
+      renderHook(() => useInstallPrompt());
 
-    expect(localStorage.getItem('peptitide:install-prompt:installed')).toBe('1');
-    expect(localStorage.getItem('petitide:install-prompt:installed')).toBeNull();
-  });
+      expect(localStorage.getItem('peptide:install-prompt:installed')).toBe('1');
+      expect(localStorage.getItem(`${legacyNamespace}:install-prompt:installed`)).toBeNull();
+    },
+  );
 
-  it('moves the legacy dismissal timestamp to the corrected storage namespace', () => {
-    localStorage.setItem('petitide:install-prompt:dismissed-at', '12345');
+  it.each(['peptitide', 'petitide'])(
+    'moves the %s dismissal timestamp to the corrected storage namespace',
+    (legacyNamespace) => {
+      localStorage.setItem(`${legacyNamespace}:install-prompt:dismissed-at`, '12345');
 
-    renderHook(() => useInstallPrompt());
+      renderHook(() => useInstallPrompt());
 
-    expect(localStorage.getItem('peptitide:install-prompt:dismissed-at')).toBe('12345');
-    expect(localStorage.getItem('petitide:install-prompt:dismissed-at')).toBeNull();
-  });
+      expect(localStorage.getItem('peptide:install-prompt:dismissed-at')).toBe('12345');
+      expect(localStorage.getItem(`${legacyNamespace}:install-prompt:dismissed-at`)).toBeNull();
+    },
+  );
 });

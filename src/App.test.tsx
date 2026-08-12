@@ -13,7 +13,7 @@ describe('App', () => {
   it('accepts onboarding and opens the catalog', async () => {
     render(<App />)
 
-    expect(await screen.findByText('Peptitide Master')).toBeInTheDocument()
+    expect(await screen.findByText('Peptide Master')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /i understand/i }))
 
     await waitFor(() => expect(screen.getByRole('button', { name: /open catalog/i })).toBeInTheDocument())

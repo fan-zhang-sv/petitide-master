@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.svg'],
       manifest: {
-        name: 'Peptitide Master',
-        short_name: 'Peptitide',
+        name: 'Peptide Master',
+        short_name: 'Peptide',
         description: 'Peptide cycle, dose, and injection tracking — local on your device, with optional Google sync.',
         theme_color: '#f7f3ea',
         background_color: '#f7f3ea',
