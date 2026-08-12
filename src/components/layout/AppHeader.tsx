@@ -6,7 +6,7 @@ export function AppHeader() {
     <header className={styles.topbar}>
       <div className={styles['mobile-brand']}>
         <Eyebrow>Local-first PWA</Eyebrow>
-        <h1>Petitide Master</h1>
+        <h1>Peptitide Master</h1>
       </div>
     </header>
   );

@@ -19,8 +19,8 @@ export function Onboarding({ onAccept }: OnboardingProps) {
         <div className={styles['brand-mark']}>
           <Syringe aria-hidden />
         </div>
-        <Eyebrow>Petitide Master</Eyebrow>
-        <h1>Welcome to Petitide Master</h1>
+        <Eyebrow>Peptitide Master</Eyebrow>
+        <h1>Welcome to Peptitide Master</h1>
         <div className={styles['feature-list']}>
           <div className={styles['feature-tile']}>
             <Archive aria-hidden className={styles['feature-icon']} />

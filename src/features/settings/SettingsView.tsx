@@ -36,7 +36,7 @@ export function SettingsView({
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `petitide-master-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      link.download = `peptitide-master-backup-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.append(link);
       link.click();
       link.remove();

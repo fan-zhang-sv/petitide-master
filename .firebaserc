@@ -1,5 +1,18 @@
 {
-  "projects": {},
-  "targets": {},
+  "projects": {
+    "default": "petitide-master"
+  },
+  "targets": {
+    "petitide-master": {
+      "hosting": {
+        "production": [
+          "peptitide-master"
+        ],
+        "legacy": [
+          "petitide-master"
+        ]
+      }
+    }
+  },
   "etags": {}
 }

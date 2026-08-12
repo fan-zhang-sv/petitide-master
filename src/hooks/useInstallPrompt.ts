@@ -12,25 +12,37 @@ export type InstallPlatform =
   | 'android-instructions'
   | 'none';
 
-const DISMISS_KEY = 'petitide:install-prompt:dismissed-at';
-const INSTALLED_KEY = 'petitide:install-prompt:installed';
+const DISMISS_KEY = 'peptitide:install-prompt:dismissed-at';
+const INSTALLED_KEY = 'peptitide:install-prompt:installed';
+// Keep these only as migration sources for people who used the app before the
+// brand spelling was corrected.
+const LEGACY_DISMISS_KEY = 'petitide:install-prompt:dismissed-at';
+const LEGACY_INSTALLED_KEY = 'petitide:install-prompt:installed';
 const DISMISS_COOLDOWN_MS = 14 * 24 * 60 * 60 * 1000;
 
-function safeReadNumber(key: string): number {
+function safeRead(key: string, legacyKey: string): string | null {
   try {
-    const value = localStorage.getItem(key);
-    return value ? Number(value) || 0 : 0;
+    const current = localStorage.getItem(key);
+    if (current !== null) return current;
+
+    const legacy = localStorage.getItem(legacyKey);
+    if (legacy !== null) {
+      localStorage.setItem(key, legacy);
+      localStorage.removeItem(legacyKey);
+    }
+    return legacy;
   } catch {
-    return 0;
+    return null;
   }
 }
 
-function safeReadBool(key: string): boolean {
-  try {
-    return localStorage.getItem(key) === '1';
-  } catch {
-    return false;
-  }
+function safeReadNumber(key: string, legacyKey: string): number {
+  const value = safeRead(key, legacyKey);
+  return value ? Number(value) || 0 : 0;
+}
+
+function safeReadBool(key: string, legacyKey: string): boolean {
+  return safeRead(key, legacyKey) === '1';
 }
 
 function safeWrite(key: string, value: string) {
@@ -70,8 +82,12 @@ export interface InstallPromptState {
 
 export function useInstallPrompt(): InstallPromptState {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState<boolean>(() => safeReadBool(INSTALLED_KEY));
-  const [dismissedAt, setDismissedAt] = useState<number>(() => safeReadNumber(DISMISS_KEY));
+  const [installed, setInstalled] = useState<boolean>(() =>
+    safeReadBool(INSTALLED_KEY, LEGACY_INSTALLED_KEY),
+  );
+  const [dismissedAt, setDismissedAt] = useState<number>(() =>
+    safeReadNumber(DISMISS_KEY, LEGACY_DISMISS_KEY),
+  );
   const [standalone, setStandalone] = useState<boolean>(() => detectStandalone());
   // Capture mount time once so the cooldown check stays pure across renders.
   // Dismissals during the session set dismissedAt > mountedAt, which keeps

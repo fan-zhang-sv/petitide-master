@@ -23,7 +23,7 @@ export function InstallPrompt() {
 
   return (
     <>
-      <div role="dialog" aria-label="Install Petitide" className={styles['install-banner']}>
+      <div role="dialog" aria-label="Install Peptitide" className={styles['install-banner']}>
         <span className={styles['install-banner-icon']} aria-hidden>
           <Smartphone />
         </span>
@@ -96,7 +96,7 @@ export function InstallPrompt() {
                   <span className={styles['install-step-number']}>3</span>
                   <div className={styles['install-step-text']}>
                     <strong>Tap "Add"</strong>
-                    <span>Petitide opens like a native app.</span>
+                    <span>Peptitide opens like a native app.</span>
                   </div>
                 </li>
               </ol>
@@ -120,7 +120,7 @@ export function InstallPrompt() {
                   <span className={styles['install-step-number']}>3</span>
                   <div className={styles['install-step-text']}>
                     <strong>Confirm</strong>
-                    <span>Petitide will appear on your home screen.</span>
+                    <span>Peptitide will appear on your home screen.</span>
                   </div>
                 </li>
               </ol>
